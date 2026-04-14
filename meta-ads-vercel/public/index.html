@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Ads Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a26;
+    --border: #2a2a3a; --accent: #4f6ef7; --accent2: #7c4dff;
+    --success: #00e5a0; --warning: #ffb300; --danger: #ff4757;
+    --text: #e8e8f0; --muted: #6b6b80;
+    --mono: 'IBM Plex Mono', monospace; --sans: 'Syne', sans-serif;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: linear-gradient(rgba(79,110,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79,110,247,0.03) 1px, transparent 1px);
+    background-size: 40px 40px; pointer-events: none; z-index: 0;
+  }
+
+  /* ── ENV REMINDER MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; backdrop-filter: blur(6px);
+    animation: fadeIn 0.3s ease;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 36px; max-width: 560px; width: 90%;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(79,110,247,0.15); border: 1px solid rgba(79,110,247,0.3);
+    color: var(--accent); font-family: var(--mono); font-size: 11px;
+    padding: 4px 12px; border-radius: 20px; margin-bottom: 20px;
+    letter-spacing: 0.08em;
+  }
+  .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .modal-sub { font-size: 13px; color: var(--muted); font-family: var(--mono); margin-bottom: 24px; line-height: 1.6; }
+  .env-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .env-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .env-icon { font-size: 18px; margin-top: 1px; }
+  .env-name { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .env-desc { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .env-status { margin-left: auto; font-size: 11px; font-family: var(--mono); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+  .env-status.ok { background: rgba(0,229,160,0.15); color: var(--success); }
+  .env-status.missing { background: rgba(255,71,87,0.15); color: var(--danger); }
+  .env-status.checking { background: rgba(255,179,0,0.15); color: var(--warning); }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-btn {
+    padding: 10px 22px; border-radius: 8px; font-family: var(--sans);
+    font-size: 13px; font-weight: 700; cursor: pointer; border: none;
+    transition: all 0.15s; letter-spacing: 0.04em;
+  }
+  .modal-btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+  .modal-btn-primary:hover { opacity: 0.85; }
+  .modal-btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .modal-btn-ghost:hover { color: var(--text); }
+  .modal-note {
+    background: rgba(255,179,0,0.08); border: 1px solid rgba(255,179,0,0.2);
+    border-radius: 8px; padding: 12px 14px; font-size: 12px;
+    font-family: var(--mono); color: var(--warning); line-height: 1.6; margin-bottom: 20px;
+  }
+
+  /* ── APP ── */
+  .app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 240px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
+  }
+  .logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; }
+  .logo-text { font-size: 14px; font-weight: 700; letter-spacing: 0.05em; }
+  .logo-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); background: rgba(79,110,247,0.12); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .status-bar {
+    padding: 16px; border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 11px;
+  }
+  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
+  .status-dot.ok { background: var(--success); box-shadow: 0 0 6px var(--success); }
+  .status-dot.error { background: var(--danger); }
+  .status-account { color: var(--text); font-weight: 600; margin-top: 4px; }
+  .status-currency { color: var(--muted); }
+  .env-reminder-btn {
+    display: flex; align-items: center; gap: 6px; margin-top: 10px;
+    background: rgba(79,110,247,0.1); border: 1px solid rgba(79,110,247,0.2);
+    color: var(--accent); font-family: var(--mono); font-size: 10px;
+    padding: 6px 10px; border-radius: 6px; cursor: pointer; width: 100%;
+    letter-spacing: 0.05em; transition: all 0.15s;
+  }
+  .env-reminder-btn:hover { background: rgba(79,110,247,0.2); }
+
+  .main { margin-left: 240px; flex: 1; padding: 32px; min-height: 100vh; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.2s ease; }
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
+  .page-sub { font-size: 13px; color: var(--muted); font-family: var(--mono); margin-top: 4px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; font-family: var(--mono); }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-label { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 8px; }
+  .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { text-align: left; padding: 10px 14px; font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 12px 14px; vertical-align: middle; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-family: var(--mono); font-weight: 600; }
+  .badge-active { background: rgba(0,229,160,0.15); color: var(--success); }
+  .badge-paused { background: rgba(255,179,0,0.15); color: var(--warning); }
+  .badge-draft { background: rgba(107,107,128,0.2); color: var(--muted); }
+  .badge-error { background: rgba(255,71,87,0.15); color: var(--danger); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.08em; }
+  .form-input, .form-select, .form-textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--sans); font-size: 13px; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s; width: 100%; }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-select option { background: var(--surface2); }
+  .btn { padding: 11px 22px; border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; letter-spacing: 0.04em; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .alert { padding: 14px 16px; border-radius: 8px; font-size: 13px; font-family: var(--mono); margin-bottom: 16px; display: none; line-height: 1.5; }
+  .alert.show { display: block; }
+  .alert-success { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--success); }
+  .alert-error { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: var(--danger); }
+  .loader { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .chart-area { height: 160px; background: var(--surface2); border-radius: 10px; display: flex; align-items: flex-end; gap: 4px; padding: 16px; overflow: hidden; }
+  .bar { flex: 1; border-radius: 4px 4px 0 0; background: linear-gradient(to top, var(--accent), var(--accent2)); opacity: 0.7; transition: opacity 0.2s; animation: growBar 0.6s ease forwards; transform-origin: bottom; }
+  .bar:hover { opacity: 1; }
+  @keyframes growBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .pill { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; background: transparent; color: var(--muted); }
+  .pill.selected { background: var(--accent); color: white; border-color: var(--accent); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-family: var(--mono); background: rgba(79,110,247,0.15); color: var(--accent); margin-right: 4px; }
+  .result-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
+  .action-btns { display: flex; gap: 6px; }
+  .icon-btn { padding: 5px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .icon-btn:hover { color: var(--text); border-color: var(--accent); }
+  #toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 12px 18px; border-radius: 10px; opacity: 0; transform: translateY(10px); transition: all 0.25s; z-index: 9998; max-width: 340px; line-height: 1.5; }
+  #toast.show { opacity: 1; transform: none; }
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ── ENV REMINDER MODAL ── -->
+<div class="modal-overlay" id="envModal">
+  <div class="modal">
+    <div class="modal-badge">⚙️ CONFIGURACIÓN REQUERIDA</div>
+    <div class="modal-title">Variables de entorno</div>
+    <div class="modal-sub">Antes de usar la app, asegúrate de que estas variables estén configuradas en Vercel → Settings → Environment Variables</div>
+
+    <div class="modal-note">
+      ⚠ En desarrollo local: copia <strong>.env.example</strong> como <strong>.env.local</strong> y llena los valores. Nunca subas .env.local a Git.
+    </div>
+
+    <div class="env-list">
+      <div class="env-item">
+        <div class="env-icon">🔑</div>
+        <div>
+          <div class="env-name">META_ACCESS_TOKEN</div>
+          <div class="env-desc">Token de larga duración. Obtenerlo en developers.facebook.com → Graph API Explorer</div>
+        </div>
+        <div class="env-status checking" id="envStatus1">verificando…</div>
+      </div>
+      <div class="env-item">
+        <div class="env-icon">🏢</div>
+        <div>
+          <div class="env-name">META_ACCOUNT_ID</div>
+          <div class="env-desc">Formato: act_XXXXXXXXX — encuéntralo en Ads Manager → URL o Configuración</div>
+        </div>
+        <div class="env-status checking" id="envStatus2">verificando…</div>
+      </div>
+      <div class="env-item">
+        <div class="env-icon">🌐</div>
+        <div>
+          <div class="env-name">META_API_VERSION</div>
+          <div class="env-desc">Versión de la API (default: v19.0). Revisa changelog en developers.facebook.com</div>
+        </div>
+        <div class="env-status checking" id="envStatus3">verificando…</div>
+      </div>
+      <div class="env-item">
+        <div class="env-icon">🔒</div>
+        <div>
+          <div class="env-name">API_SECRET_KEY</div>
+          <div class="env-desc">Clave aleatoria para seguridad interna. Genera con: <code style="color:var(--accent)">openssl rand -hex 32</code></div>
+        </div>
+        <div class="env-status checking" id="envStatus4">verificando…</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-ghost" onclick="dismissModal(false)">Recordar después</button>
+      <button class="modal-btn modal-btn-primary" onclick="dismissModal(true)" id="continueBtn">Continuar →</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">M</div>
+      <div>
+        <div class="logo-text">META ADS</div>
+        <div class="logo-sub">MANAGER — VERCEL</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="nav('dashboard', this)"><span class="nav-icon">📊</span> Dashboard</button>
+      <button class="nav-item" onclick="nav('campaigns', this)"><span class="nav-icon">📢</span> Campañas</button>
+      <button class="nav-item" onclick="nav('create', this)"><span class="nav-icon">✨</span> Crear Campaña</button>
+      <button class="nav-item" onclick="nav('adsets', this)"><span class="nav-icon">🎯</span> Ad Sets</button>
+      <button class="nav-item" onclick="nav('metrics', this)"><span class="nav-icon">📈</span> Métricas</button>
+    </nav>
+    <div class="status-bar">
+      <div><span class="status-dot" id="statusDot"></span><span id="statusText" style="color:var(--muted)">Sin conectar</span></div>
+      <div class="status-account" id="statusAccount"></div>
+      <div class="status-currency" id="statusCurrency"></div>
+      <button class="env-reminder-btn" onclick="showModal()">⚙️ Ver variables de entorno</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="toast"></div>
+
+    <!-- Dashboard -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">// resumen de tu cuenta publicitaria</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">GASTO (14 días)</div><div class="stat-value" id="statSpend">—</div></div>
+        <div class="stat-card"><div class="stat-label">ALCANCE</div><div class="stat-value" id="statReach">—</div></div>
+        <div class="stat-card"><div class="stat-label">IMPRESIONES</div><div class="stat-value" id="statImpr">—</div></div>
+        <div class="stat-card"><div class="stat-label">CONVERSIONES</div><div class="stat-value" id="statConv">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Gasto diario (últimos 14 días)</div>
+        <div class="chart-area" id="chartArea"><div class="empty-state">Cargando…</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Campañas recientes</div>
+        <div id="dashCampaigns"><div class="empty-state">Cargando…</div></div>
+      </div>
+    </div>
+
+    <!-- Campaigns -->
+    <div class="page" id="page-campaigns">
+      <div class="page-header">
+        <div class="page-title">Campañas</div>
+        <div class="page-sub">// gestiona todas tus campañas</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">LISTA</div>
+          <button class="btn btn-primary" onclick="loadCampaigns()">↻ Actualizar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nombre</th><th>Objetivo</th><th>Estado</th><th>Presupuesto</th><th>Acciones</th></tr></thead>
+            <tbody id="campaignTable"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create -->
+    <div class="page" id="page-create">
+      <div class="page-header">
+        <div class="page-title">Crear Campaña</div>
+        <div class="page-sub">// nueva campaña vía API backend</div>
+      </div>
+      <div id="createAlert" class="alert"></div>
+      <div class="card">
+        <div class="card-title">DATOS BÁSICOS</div>
+        <div class="form-grid">
+          <div class="form-group full"><label class="form-label">NOMBRE</label><input class="form-input" id="campName" placeholder="ej. Black Friday 2025 — Conversiones" /></div>
+          <div class="form-group"><label class="form-label">OBJETIVO</label>
+            <select class="form-select" id="campObjective">
+              <option value="OUTCOME_SALES">Ventas</option>
+              <option value="OUTCOME_LEADS">Leads</option>
+              <option value="OUTCOME_TRAFFIC">Tráfico</option>
+              <option value="OUTCOME_AWARENESS">Reconocimiento</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">ESTADO INICIAL</label>
+            <select class="form-select" id="campStatus">
+              <option value="PAUSED">Pausada</option>
+              <option value="ACTIVE">Activa</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">PRESUPUESTO</div>
+        <div class="pill-row" id="budgetPills">
+          <button class="pill selected" onclick="selectPill('budgetPills',this,'daily')">Diario</button>
+          <button class="pill" onclick="selectPill('budgetPills',this,'lifetime')">Lifetime</button>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">MONTO (centavos, ej: 1000 = $10)</label><input class="form-input" id="campBudget" type="number" placeholder="1000" /></div>
+          <div class="form-group"><label class="form-label">BID STRATEGY</label>
+            <select class="form-select" id="campBid">
+              <option value="LOWEST_COST_WITHOUT_CAP">Costo más bajo</option>
+              <option value="LOWEST_COST_WITH_BID_CAP">Costo más bajo con límite</option>
+              <option value="COST_CAP">Costo objetivo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="createCampaign()">✨ Crear Campaña</button>
+        <button class="btn btn-ghost" onclick="resetForm()">Limpiar</button>
+      </div>
+      <div id="createResult"></div>
+    </div>
+
+    <!-- Ad Sets -->
+    <div class="page" id="page-adsets">
+      <div class="page-header">
+        <div class="page-title">Ad Sets</div>
+        <div class="page-sub">// conjuntos de anuncios</div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin:0">AD SETS</div>
+          <button class="btn btn-primary" onclick="loadAdsets()">↻ Cargar</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Nombre</th><th>Campaña ID</th><th>Estado</th><th>Presupuesto</th><th>Optimización</th></tr></thead>
+            <tbody id="adsetTable"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="page" id="page-metrics">
+      <div class="page-header">
+        <div class="page-title">Métricas</div>
+        <div class="page-sub">// análisis de rendimiento</div>
+      </div>
+      <div class="card">
+        <div class="card-title">FILTROS</div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">DESDE</label><input class="form-input" id="dateFrom" type="date" /></div>
+          <div class="form-group"><label class="form-label">HASTA</label><input class="form-input" id="dateTo" type="date" /></div>
+          <div class="form-group"><label class="form-label">NIVEL</label>
+            <select class="form-select" id="metricsLevel">
+              <option value="account">Cuenta</option>
+              <option value="campaign">Campaña</option>
+              <option value="adset">Ad Set</option>
+            </select>
+          </div>
+          <div class="form-group" style="align-self:flex-end">
+            <button class="btn btn-primary" onclick="loadMetrics()" style="width:100%">📊 Cargar</button>
+          </div>
+        </div>
+      </div>
+      <div id="metricsResult"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  let budgetType = 'daily';
+  const BASE = ''; // En Vercel: '' (mismo dominio). En local: 'http://localhost:3000'
+
+  // ── MODAL ──
+  async function checkEnvStatus() {
+    try {
+      const res = await fetch(`${BASE}/api/status`);
+      const data = await res.json();
+      const envMap = {
+        1: data.env?.META_ACCESS_TOKEN,
+        2: data.env?.META_ACCOUNT_ID,
+        3: true, // API_VERSION siempre tiene default
+        4: data.env?.API_SECRET_KEY,
+      };
+      Object.entries(envMap).forEach(([k, v]) => {
+        const el = document.getElementById(`envStatus${k}`);
+        if (v === true || v) { el.textContent = '✓ OK'; el.className = 'env-status ok'; }
+        else { el.textContent = '✗ Falta'; el.className = 'env-status missing'; }
+      });
+      if (data.status === 'ok') {
+        document.getElementById('statusDot').classList.add('ok');
+        document.getElementById('statusText').textContent = 'Conectado';
+        document.getElementById('statusAccount').textContent = data.account?.name || '';
+        document.getElementById('statusCurrency').textContent = `${data.account?.currency || ''} · ${data.account?.timezone || ''}`;
+        document.getElementById('continueBtn').textContent = 'Todo listo ✓';
+        loadDashboard();
+      }
+    } catch(e) {
+      ['1','2','3','4'].forEach(k => {
+        const el = document.getElementById(`envStatus${k}`);
+        el.textContent = '? N/A'; el.className = 'env-status checking';
+      });
+    }
+  }
+
+  function showModal() { document.getElementById('envModal').classList.remove('hidden'); }
+  function dismissModal(proceed) {
+    document.getElementById('envModal').classList.add('hidden');
+    if (proceed) toast('✅ Variables verificadas — app lista');
+  }
+
+  // ── NAV ──
+  function nav(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    el.classList.add('active');
+  }
+
+  // ── API CALLS ──
+  async function api(path, options = {}) {
+    const res = await fetch(`${BASE}/api/${path}`, {
+      headers: { 'Content-Type': 'application/json', ...options.headers },
+      ...options,
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  async function loadDashboard() {
+    try {
+      const ins = await api('insights?date_preset=last_14_days&time_increment=1');
+      if (ins.data && ins.data.length > 0) {
+        const total = ins.data.reduce((acc, d) => ({ spend: acc.spend + parseFloat(d.spend||0), reach: acc.reach + parseInt(d.reach||0), impressions: acc.impressions + parseInt(d.impressions||0) }), {spend:0,reach:0,impressions:0});
+        document.getElementById('statSpend').textContent = '$' + total.spend.toFixed(2);
+        document.getElementById('statReach').textContent = num(total.reach);
+        document.getElementById('statImpr').textContent = num(total.impressions);
+        const allConv = ins.data.flatMap(d => d.actions||[]).filter(a => a.action_type==='purchase').reduce((s,a) => s+parseInt(a.value||0), 0);
+        document.getElementById('statConv').textContent = allConv;
+        // Chart
+        const chartArea = document.getElementById('chartArea');
+        chartArea.innerHTML = '';
+        const max = Math.max(...ins.data.map(d => parseFloat(d.spend||0)));
+        ins.data.forEach((d, i) => {
+          const bar = document.createElement('div'); bar.className = 'bar';
+          const h = max > 0 ? (parseFloat(d.spend||0)/max)*100 : 5;
+          bar.style.height = Math.max(h,3)+'%'; bar.style.animationDelay = (i*0.04)+'s';
+          bar.title = `${d.date_start}: $${parseFloat(d.spend||0).toFixed(2)}`;
+          chartArea.appendChild(bar);
+        });
+      }
+      const camps = await api('campaigns');
+      const el = document.getElementById('dashCampaigns');
+      if (!camps.data || camps.data.length === 0) { el.innerHTML = '<div class="empty-state">No hay campañas</div>'; return; }
+      el.innerHTML = camps.data.slice(0,5).map(c => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-size:13px;font-weight:600">${c.name}</div><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">${c.objective}</div></div>
+          <span class="badge ${bc(c.status)}">${c.status}</span>
+        </div>`).join('');
+    } catch(e) { toast('Error dashboard: ' + e.message); }
+  }
+
+  async function loadCampaigns() {
+    try {
+      const data = await api('campaigns');
+      const tbody = document.getElementById('campaignTable');
+      if (!data.data || data.data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay campañas</td></tr>'; return; }
+      tbody.innerHTML = data.data.map(c => `
+        <tr>
+          <td><div style="font-weight:600">${c.name}</div><div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${c.id}</div></td>
+          <td><span class="tag">${c.objective}</span></td>
+          <td><span class="badge ${bc(c.status)}">${c.status}</span></td>
+          <td style="font-family:var(--mono);font-size:12px">${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2)+'/día' : c.lifetime_budget ? '$'+(c.lifetime_budget/100).toFixed(2)+' total' : '—'}</td>
+          <td><div class="action-btns">
+            <button class="icon-btn" onclick="toggleCampaign('${c.id}','${c.status}')">${c.status==='ACTIVE'?'⏸':'▶'}</button>
+            <button class="icon-btn" onclick="deleteCampaign('${c.id}','${c.name}')">🗑</button>
+          </div></td>
+        </tr>`).join('');
+    } catch(e) { toast('Error: ' + e.message); }
+  }
+
+  async function toggleCampaign(id, status) {
+    const newStatus = status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
+    try {
+      await api(`campaigns?id=${id}`, { method: 'POST', body: JSON.stringify({ status: newStatus }) });
+      toast(`✅ Campaña ${newStatus === 'ACTIVE' ? 'activada' : 'pausada'}`);
+      loadCampaigns();
+    } catch(e) { toast('❌ ' + e.message); }
+  }
+
+  async function deleteCampaign(id, name) {
+    if (!confirm(`¿Eliminar "${name}"?`)) return;
+    try {
+      await api(`campaigns?id=${id}`, { method: 'DELETE' });
+      toast('🗑 Eliminada'); loadCampaigns();
+    } catch(e) { toast('❌ ' + e.message); }
+  }
+
+  async function createCampaign() {
+    const name = document.getElementById('campName').value.trim();
+    const objective = document.getElementById('campObjective').value;
+    const status = document.getElementById('campStatus').value;
+    const budget = document.getElementById('campBudget').value;
+    const bid_strategy = document.getElementById('campBid').value;
+    if (!name || !budget) { showAlert('createAlert','error','⚠ Nombre y presupuesto obligatorios'); return; }
+    const body = { name, objective, status, bid_strategy, special_ad_categories: [] };
+    if (budgetType === 'daily') body.daily_budget = budget;
+    else body.lifetime_budget = budget;
+    try {
+      const data = await api('campaigns', { method: 'POST', body: JSON.stringify(body) });
+      showAlert('createAlert','success',`✅ Campaña creada: ${data.id}`);
+      document.getElementById('createResult').innerHTML = `<div class="result-block">${JSON.stringify(data, null, 2)}</div>`;
+      toast('✅ Campaña creada');
+    } catch(e) { showAlert('createAlert','error','❌ ' + e.message); }
+  }
+
+  async function loadAdsets() {
+    try {
+      const data = await api('adsets');
+      const tbody = document.getElementById('adsetTable');
+      if (!data.data || data.data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay ad sets</td></tr>'; return; }
+      tbody.innerHTML = data.data.map(a => `
+        <tr>
+          <td><div style="font-weight:600">${a.name}</div><div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${a.id}</div></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${a.campaign_id}</td>
+          <td><span class="badge ${bc(a.status)}">${a.status}</span></td>
+          <td style="font-family:var(--mono);font-size:12px">${a.daily_budget ? '$'+(a.daily_budget/100).toFixed(2)+'/día' : '—'}</td>
+          <td><span class="tag">${a.optimization_goal||'—'}</span></td>
+        </tr>`).join('');
+    } catch(e) { toast('Error: ' + e.message); }
+  }
+
+  async function loadMetrics() {
+    const from = document.getElementById('dateFrom').value;
+    const to = document.getElementById('dateTo').value;
+    const level = document.getElementById('metricsLevel').value;
+    if (!from || !to) { toast('⚠ Selecciona fechas'); return; }
+    try {
+      const data = await api(`insights?since=${from}&until=${to}&level=${level}`);
+      const container = document.getElementById('metricsResult');
+      if (!data.data || data.data.length === 0) { container.innerHTML = '<div class="card"><div class="empty-state">Sin datos para ese período</div></div>'; return; }
+      const rows = data.data.map(d => {
+        const conv = (d.actions||[]).find(a=>a.action_type==='purchase');
+        return `<tr>
+          <td style="font-family:var(--mono);font-size:12px">${d.date_start} → ${d.date_stop}</td>
+          <td style="font-family:var(--mono);font-size:12px">$${parseFloat(d.spend||0).toFixed(2)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${num(d.reach||0)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${num(d.impressions||0)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${num(d.clicks||0)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${parseFloat(d.ctr||0).toFixed(2)}%</td>
+          <td style="font-family:var(--mono);font-size:12px">$${parseFloat(d.cpc||0).toFixed(2)}</td>
+          <td style="font-family:var(--mono);font-size:12px">${conv?conv.value:'—'}</td>
+        </tr>`;
+      }).join('');
+      container.innerHTML = `<div class="card"><div class="card-title">RESULTADOS</div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Gasto</th><th>Alcance</th><th>Impresiones</th><th>Clics</th><th>CTR</th><th>CPC</th><th>Conversiones</th></tr></thead><tbody>${rows}</tbody></table></div><div class="result-block">${JSON.stringify(data.data,null,2)}</div></div>`;
+    } catch(e) { toast('❌ ' + e.message); }
+  }
+
+  // ── HELPERS ──
+  function bc(s) { return s==='ACTIVE'?'badge-active':s==='PAUSED'?'badge-paused':s==='DELETED'?'badge-error':'badge-draft'; }
+  function num(n) { return parseInt(n).toLocaleString('es-MX'); }
+  function selectPill(g, el, v) { document.querySelectorAll(`#${g} .pill`).forEach(p=>p.classList.remove('selected')); el.classList.add('selected'); if(g==='budgetPills') budgetType=v; }
+  function resetForm() { ['campName','campBudget'].forEach(id=>document.getElementById(id).value=''); document.getElementById('createResult').innerHTML=''; document.getElementById('createAlert').className='alert'; }
+  function showAlert(id, type, msg) { const el=document.getElementById(id); el.className=`alert alert-${type} show`; el.textContent=msg; setTimeout(()=>el.classList.remove('show'),5000); }
+  function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3500); }
+
+  // Init
+  const today = new Date();
+  document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+  document.getElementById('dateFrom').value = new Date(today-30*864e5).toISOString().split('T')[0];
+
+  checkEnvStatus();
+</script>
+</body>
+</html>
