@@ -3,600 +3,703 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Meta Ads Manager</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>FABRICK — Agente de ADS</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a26;
-    --border: #2a2a3a; --accent: #4f6ef7; --accent2: #7c4dff;
-    --success: #00e5a0; --warning: #ffb300; --danger: #ff4757;
-    --text: #e8e8f0; --muted: #6b6b80;
-    --mono: 'IBM Plex Mono', monospace; --sans: 'Syne', sans-serif;
-  }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; overflow-x: hidden; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: linear-gradient(rgba(79,110,247,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(79,110,247,0.03) 1px, transparent 1px);
-    background-size: 40px 40px; pointer-events: none; z-index: 0;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --black: #080808;
+  --black2: #111111;
+  --black3: #1a1a1a;
+  --border: #2a2a2a;
+  --yellow: #f5e642;
+  --yellow2: #ffc107;
+  --white: #f0f0f0;
+  --muted: #666;
+  --success: #00e5a0;
+  --danger: #ff4444;
+  --bebas: 'Bebas Neue', sans-serif;
+  --dm: 'DM Sans', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+}
 
-  /* ── ENV REMINDER MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 9999; backdrop-filter: blur(6px);
-    animation: fadeIn 0.3s ease;
-  }
-  .modal-overlay.hidden { display: none; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 36px; max-width: 560px; width: 90%;
-    animation: slideUp 0.3s ease;
-  }
-  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .modal-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(79,110,247,0.15); border: 1px solid rgba(79,110,247,0.3);
-    color: var(--accent); font-family: var(--mono); font-size: 11px;
-    padding: 4px 12px; border-radius: 20px; margin-bottom: 20px;
-    letter-spacing: 0.08em;
-  }
-  .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.02em; }
-  .modal-sub { font-size: 13px; color: var(--muted); font-family: var(--mono); margin-bottom: 24px; line-height: 1.6; }
-  .env-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .env-item {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 16px;
-    display: flex; align-items: flex-start; gap: 12px;
-  }
-  .env-icon { font-size: 18px; margin-top: 1px; }
-  .env-name { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
-  .env-desc { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
-  .env-status { margin-left: auto; font-size: 11px; font-family: var(--mono); padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
-  .env-status.ok { background: rgba(0,229,160,0.15); color: var(--success); }
-  .env-status.missing { background: rgba(255,71,87,0.15); color: var(--danger); }
-  .env-status.checking { background: rgba(255,179,0,0.15); color: var(--warning); }
-  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
-  .modal-btn {
-    padding: 10px 22px; border-radius: 8px; font-family: var(--sans);
-    font-size: 13px; font-weight: 700; cursor: pointer; border: none;
-    transition: all 0.15s; letter-spacing: 0.04em;
-  }
-  .modal-btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
-  .modal-btn-primary:hover { opacity: 0.85; }
-  .modal-btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-  .modal-btn-ghost:hover { color: var(--text); }
-  .modal-note {
-    background: rgba(255,179,0,0.08); border: 1px solid rgba(255,179,0,0.2);
-    border-radius: 8px; padding: 12px 14px; font-size: 12px;
-    font-family: var(--mono); color: var(--warning); line-height: 1.6; margin-bottom: 20px;
-  }
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--dm);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* ── APP ── */
-  .app { position: relative; z-index: 1; display: flex; min-height: 100vh; }
-  .sidebar {
-    width: 240px; background: var(--surface); border-right: 1px solid var(--border);
-    display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100;
-  }
-  .logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-  .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: white; }
-  .logo-text { font-size: 14px; font-weight: 700; letter-spacing: 0.05em; }
-  .logo-sub { font-size: 10px; color: var(--muted); font-family: var(--mono); }
-  .nav { padding: 16px 12px; flex: 1; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; }
-  .nav-item:hover { color: var(--text); background: var(--surface2); }
-  .nav-item.active { color: var(--accent); background: rgba(79,110,247,0.12); }
-  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+/* Grain overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 9999; opacity: 0.4;
+}
 
-  .status-bar {
-    padding: 16px; border-top: 1px solid var(--border);
-    font-family: var(--mono); font-size: 11px;
-  }
-  .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); margin-right: 6px; }
-  .status-dot.ok { background: var(--success); box-shadow: 0 0 6px var(--success); }
-  .status-dot.error { background: var(--danger); }
-  .status-account { color: var(--text); font-weight: 600; margin-top: 4px; }
-  .status-currency { color: var(--muted); }
-  .env-reminder-btn {
-    display: flex; align-items: center; gap: 6px; margin-top: 10px;
-    background: rgba(79,110,247,0.1); border: 1px solid rgba(79,110,247,0.2);
-    color: var(--accent); font-family: var(--mono); font-size: 10px;
-    padding: 6px 10px; border-radius: 6px; cursor: pointer; width: 100%;
-    letter-spacing: 0.05em; transition: all 0.15s;
-  }
-  .env-reminder-btn:hover { background: rgba(79,110,247,0.2); }
+/* Header */
+.header {
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px; position: sticky; top: 0;
+  background: rgba(8,8,8,0.95); backdrop-filter: blur(10px);
+  z-index: 100;
+}
+.logo-wrap { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 36px; height: 36px;
+  background: var(--yellow);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--bebas); font-size: 20px; color: var(--black);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+.logo-name { font-family: var(--bebas); font-size: 22px; letter-spacing: 0.15em; color: var(--white); }
+.logo-tag { font-family: var(--mono); font-size: 10px; color: var(--yellow); letter-spacing: 0.2em; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.status-chip {
+  display: flex; align-items: center; gap: 7px;
+  background: var(--black3); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 20px;
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.dot.live { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-  .main { margin-left: 240px; flex: 1; padding: 32px; min-height: 100vh; }
-  .page { display: none; }
-  .page.active { display: block; animation: fadeIn 0.2s ease; }
-  .page-header { margin-bottom: 28px; }
-  .page-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; }
-  .page-sub { font-size: 13px; color: var(--muted); font-family: var(--mono); margin-top: 4px; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
-  .card-title { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; font-family: var(--mono); }
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .stat-label { font-size: 11px; font-family: var(--mono); color: var(--muted); margin-bottom: 8px; }
-  .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  thead th { text-align: left; padding: 10px 14px; font-size: 10px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.1s; }
-  tbody tr:hover { background: var(--surface2); }
-  tbody td { padding: 12px 14px; vertical-align: middle; }
-  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-family: var(--mono); font-weight: 600; }
-  .badge-active { background: rgba(0,229,160,0.15); color: var(--success); }
-  .badge-paused { background: rgba(255,179,0,0.15); color: var(--warning); }
-  .badge-draft { background: rgba(107,107,128,0.2); color: var(--muted); }
-  .badge-error { background: rgba(255,71,87,0.15); color: var(--danger); }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group.full { grid-column: 1 / -1; }
-  .form-label { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.08em; }
-  .form-input, .form-select, .form-textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--sans); font-size: 13px; padding: 10px 14px; border-radius: 8px; outline: none; transition: border-color 0.2s; width: 100%; }
-  .form-input:focus, .form-select:focus { border-color: var(--accent); }
-  .form-select option { background: var(--surface2); }
-  .btn { padding: 11px 22px; border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; letter-spacing: 0.04em; }
-  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
-  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
-  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-  .btn-ghost:hover { color: var(--text); border-color: var(--accent); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
-  .alert { padding: 14px 16px; border-radius: 8px; font-size: 13px; font-family: var(--mono); margin-bottom: 16px; display: none; line-height: 1.5; }
-  .alert.show { display: block; }
-  .alert-success { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--success); }
-  .alert-error { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: var(--danger); }
-  .loader { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .chart-area { height: 160px; background: var(--surface2); border-radius: 10px; display: flex; align-items: flex-end; gap: 4px; padding: 16px; overflow: hidden; }
-  .bar { flex: 1; border-radius: 4px 4px 0 0; background: linear-gradient(to top, var(--accent), var(--accent2)); opacity: 0.7; transition: opacity 0.2s; animation: growBar 0.6s ease forwards; transform-origin: bottom; }
-  .bar:hover { opacity: 1; }
-  @keyframes growBar { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .pill { padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; border: 1px solid var(--border); cursor: pointer; transition: all 0.15s; background: transparent; color: var(--muted); }
-  .pill.selected { background: var(--accent); color: white; border-color: var(--accent); }
-  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-family: var(--mono); background: rgba(79,110,247,0.15); color: var(--accent); margin-right: 4px; }
-  .result-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; white-space: pre-wrap; word-break: break-all; max-height: 300px; overflow-y: auto; }
-  .action-btns { display: flex; gap: 6px; }
-  .icon-btn { padding: 5px 10px; border-radius: 6px; font-size: 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
-  .icon-btn:hover { color: var(--text); border-color: var(--accent); }
-  #toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 12px 18px; border-radius: 10px; opacity: 0; transform: translateY(10px); transition: all 0.25s; z-index: 9998; max-width: 340px; line-height: 1.5; }
-  #toast.show { opacity: 1; transform: none; }
-  .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); font-family: var(--mono); font-size: 13px; }
+/* Layout */
+.layout { display: grid; grid-template-columns: 320px 1fr; min-height: calc(100vh - 64px); }
+
+/* Left panel */
+.left-panel {
+  border-right: 1px solid var(--border);
+  padding: 32px 28px;
+  display: flex; flex-direction: column; gap: 24px;
+  background: var(--black2);
+}
+
+.section-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em;
+  color: var(--yellow); text-transform: uppercase; margin-bottom: 12px;
+}
+
+.input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.input-label { font-size: 11px; font-family: var(--mono); color: var(--muted); letter-spacing: 0.1em; }
+.fab-input, .fab-select, .fab-textarea {
+  background: var(--black3); border: 1px solid var(--border);
+  color: var(--white); font-family: var(--dm); font-size: 13px;
+  padding: 10px 14px; border-radius: 6px; outline: none; width: 100%;
+  transition: border-color 0.2s;
+}
+.fab-input:focus, .fab-select:focus, .fab-textarea:focus { border-color: var(--yellow); }
+.fab-select option { background: var(--black3); }
+.fab-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+.budget-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Audience pills */
+.pill-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  padding: 5px 12px; border-radius: 20px; font-size: 11px; font-family: var(--mono);
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.pill.on { background: var(--yellow); color: var(--black); border-color: var(--yellow); font-weight: 700; }
+
+/* Launch button */
+.launch-btn {
+  width: 100%; padding: 16px; border-radius: 8px;
+  background: var(--yellow); color: var(--black);
+  font-family: var(--bebas); font-size: 22px; letter-spacing: 0.15em;
+  border: none; cursor: pointer; transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.launch-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%); transition: transform 0.5s;
+}
+.launch-btn:hover::before { transform: translateX(100%); }
+.launch-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,230,66,0.3); }
+.launch-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Right panel */
+.right-panel { padding: 36px 40px; display: flex; flex-direction: column; gap: 28px; }
+
+.agent-log {
+  background: var(--black2); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden;
+  flex: 1; display: flex; flex-direction: column;
+}
+.log-header {
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.log-title { font-family: var(--bebas); font-size: 18px; letter-spacing: 0.1em; }
+.log-badge {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 20px;
+  background: rgba(245,230,66,0.1); color: var(--yellow);
+  border: 1px solid rgba(245,230,66,0.2);
+}
+
+.log-body {
+  flex: 1; padding: 20px; overflow-y: auto;
+  max-height: 400px; display: flex; flex-direction: column; gap: 10px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.7;
+}
+.log-body::-webkit-scrollbar { width: 4px; }
+.log-body::-webkit-scrollbar-track { background: transparent; }
+.log-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.log-entry { display: flex; gap: 12px; align-items: flex-start; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform:none; } }
+.log-icon { font-size: 14px; min-width: 20px; }
+.log-text { color: var(--muted); }
+.log-text.highlight { color: var(--white); }
+.log-text.success { color: var(--success); }
+.log-text.yellow { color: var(--yellow); }
+.log-text.error { color: var(--danger); }
+
+/* Thinking animation */
+.thinking {
+  display: flex; gap: 4px; align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.thinking-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--yellow); animation: bounce 1.2s infinite;
+}
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+.thinking-label { font-family: var(--mono); font-size: 11px; color: var(--yellow); margin-left: 8px; }
+.thinking.hidden { display: none; }
+
+/* Campaign cards */
+.campaigns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.campaign-card {
+  background: var(--black2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; position: relative; overflow: hidden;
+  animation: fadeUp 0.4s ease forwards; opacity: 0;
+}
+@keyframes fadeUp { to { opacity:1; transform:none; } from { opacity:0; transform:translateY(12px); } }
+.campaign-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--yellow), var(--yellow2));
+}
+.cc-type { font-family: var(--mono); font-size: 10px; color: var(--yellow); letter-spacing: 0.15em; margin-bottom: 8px; }
+.cc-name { font-family: var(--bebas); font-size: 20px; letter-spacing: 0.05em; margin-bottom: 12px; line-height: 1.1; }
+.cc-copy { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; border-left: 2px solid var(--yellow); padding-left: 10px; }
+.cc-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.cc-tag { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-family: var(--mono); background: rgba(245,230,66,0.1); color: var(--yellow); }
+.cc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+.cc-status { font-family: var(--mono); font-size: 11px; }
+.cc-status.live { color: var(--success); }
+.cc-status.creating { color: var(--yellow); }
+.cc-status.error { color: var(--danger); }
+.cc-id { font-family: var(--mono); font-size: 10px; color: var(--border); }
+
+/* Stats bar */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden;
+}
+.stat-item {
+  background: var(--black2); padding: 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-n { font-family: var(--bebas); font-size: 32px; color: var(--yellow); letter-spacing: 0.05em; }
+.stat-l { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+
+/* Strategy preview */
+.strategy-box {
+  background: var(--black2); border: 1px solid rgba(245,230,66,0.2);
+  border-radius: 12px; padding: 24px; display: none;
+}
+.strategy-box.show { display: block; animation: fadeUp 0.4s ease; }
+.strategy-title { font-family: var(--bebas); font-size: 24px; letter-spacing: 0.1em; margin-bottom: 16px; }
+.strategy-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.strategy-col { display: flex; flex-direction: column; gap: 8px; }
+.strategy-col-title { font-family: var(--mono); font-size: 10px; color: var(--yellow); letter-spacing: 0.15em; margin-bottom: 4px; }
+.strategy-item { font-size: 12px; color: var(--muted); display: flex; gap: 6px; align-items: flex-start; }
+.strategy-item::before { content: '→'; color: var(--yellow); font-size: 10px; margin-top: 2px; }
+
+#toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--black3); border: 1px solid var(--border);
+  font-family: var(--mono); font-size: 12px; color: var(--white);
+  padding: 12px 18px; border-radius: 8px;
+  opacity: 0; transform: translateY(8px); transition: all 0.25s;
+  z-index: 9998; max-width: 320px; line-height: 1.5;
+}
+#toast.show { opacity: 1; transform: none; }
+
+.divider { height: 1px; background: var(--border); }
 </style>
 </head>
 <body>
 
-<!-- ── ENV REMINDER MODAL ── -->
-<div class="modal-overlay" id="envModal">
-  <div class="modal">
-    <div class="modal-badge">⚙️ CONFIGURACIÓN REQUERIDA</div>
-    <div class="modal-title">Variables de entorno</div>
-    <div class="modal-sub">Antes de usar la app, asegúrate de que estas variables estén configuradas en Vercel → Settings → Environment Variables</div>
-
-    <div class="modal-note">
-      ⚠ En desarrollo local: copia <strong>.env.example</strong> como <strong>.env.local</strong> y llena los valores. Nunca subas .env.local a Git.
-    </div>
-
-    <div class="env-list">
-      <div class="env-item">
-        <div class="env-icon">🔑</div>
-        <div>
-          <div class="env-name">META_ACCESS_TOKEN</div>
-          <div class="env-desc">Token de larga duración. Obtenerlo en developers.facebook.com → Graph API Explorer</div>
-        </div>
-        <div class="env-status checking" id="envStatus1">verificando…</div>
-      </div>
-      <div class="env-item">
-        <div class="env-icon">🏢</div>
-        <div>
-          <div class="env-name">META_ACCOUNT_ID</div>
-          <div class="env-desc">Formato: act_XXXXXXXXX — encuéntralo en Ads Manager → URL o Configuración</div>
-        </div>
-        <div class="env-status checking" id="envStatus2">verificando…</div>
-      </div>
-      <div class="env-item">
-        <div class="env-icon">🌐</div>
-        <div>
-          <div class="env-name">META_API_VERSION</div>
-          <div class="env-desc">Versión de la API (default: v19.0). Revisa changelog en developers.facebook.com</div>
-        </div>
-        <div class="env-status checking" id="envStatus3">verificando…</div>
-      </div>
-      <div class="env-item">
-        <div class="env-icon">🔒</div>
-        <div>
-          <div class="env-name">API_SECRET_KEY</div>
-          <div class="env-desc">Clave aleatoria para seguridad interna. Genera con: <code style="color:var(--accent)">openssl rand -hex 32</code></div>
-        </div>
-        <div class="env-status checking" id="envStatus4">verificando…</div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="modal-btn modal-btn-ghost" onclick="dismissModal(false)">Recordar después</button>
-      <button class="modal-btn modal-btn-primary" onclick="dismissModal(true)" id="continueBtn">Continuar →</button>
+<header class="header">
+  <div class="logo-wrap">
+    <div class="logo-mark">F</div>
+    <div>
+      <div class="logo-name">FABRICK ADS</div>
+      <div class="logo-tag">AGENTE AUTÓNOMO v2.0</div>
     </div>
   </div>
-</div>
+  <div class="header-right">
+    <div class="status-chip">
+      <div class="dot live" id="statusDot"></div>
+      <span id="statusLabel">CONECTADO</span>
+    </div>
+    <div class="status-chip" id="accountChip" style="display:none">
+      <span id="accountName"></span>
+    </div>
+  </div>
+</header>
 
-<div class="app">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-icon">M</div>
-      <div>
-        <div class="logo-text">META ADS</div>
-        <div class="logo-sub">MANAGER — VERCEL</div>
+<div class="layout">
+
+  <!-- LEFT: Config -->
+  <aside class="left-panel">
+    <div>
+      <div class="section-label">🎯 Línea de producto</div>
+      <div class="input-group">
+        <label class="input-label">CATEGORÍA PRINCIPAL</label>
+        <select class="fab-select" id="category">
+          <option value="banos">Baños & Duchas Premium</option>
+          <option value="revestimientos">Revestimientos PVC / Wall Panels</option>
+          <option value="materiales">Materiales & Herramientas Pro</option>
+          <option value="smart">Smart Home & Iluminación LED</option>
+          <option value="full">Campaña Full Fabrick (todas)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label class="input-label">PÚBLICO OBJETIVO</label>
+        <select class="fab-select" id="audience">
+          <option value="b2c">B2C — Dueños de casa / Remodelación</option>
+          <option value="b2b">B2B — Arquitectos / Diseñadores</option>
+          <option value="both">Ambos (estrategia dual)</option>
+        </select>
       </div>
     </div>
-    <nav class="nav">
-      <button class="nav-item active" onclick="nav('dashboard', this)"><span class="nav-icon">📊</span> Dashboard</button>
-      <button class="nav-item" onclick="nav('campaigns', this)"><span class="nav-icon">📢</span> Campañas</button>
-      <button class="nav-item" onclick="nav('create', this)"><span class="nav-icon">✨</span> Crear Campaña</button>
-      <button class="nav-item" onclick="nav('adsets', this)"><span class="nav-icon">🎯</span> Ad Sets</button>
-      <button class="nav-item" onclick="nav('metrics', this)"><span class="nav-icon">📈</span> Métricas</button>
-    </nav>
-    <div class="status-bar">
-      <div><span class="status-dot" id="statusDot"></span><span id="statusText" style="color:var(--muted)">Sin conectar</span></div>
-      <div class="status-account" id="statusAccount"></div>
-      <div class="status-currency" id="statusCurrency"></div>
-      <button class="env-reminder-btn" onclick="showModal()">⚙️ Ver variables de entorno</button>
+
+    <div>
+      <div class="section-label">🌍 Mercado objetivo</div>
+      <div class="pill-wrap" id="countryPills">
+        <button class="pill on" onclick="togglePill(this,'CL')">🇨🇱 Chile</button>
+        <button class="pill" onclick="togglePill(this,'CO')">🇨🇴 Colombia</button>
+        <button class="pill" onclick="togglePill(this,'MX')">🇲🇽 México</button>
+        <button class="pill" onclick="togglePill(this,'PE')">🇵🇪 Perú</button>
+        <button class="pill" onclick="togglePill(this,'AR')">🇦🇷 Argentina</button>
+        <button class="pill" onclick="togglePill(this,'EC')">🇪🇨 Ecuador</button>
+      </div>
     </div>
+
+    <div>
+      <div class="section-label">💰 Presupuesto</div>
+      <div class="budget-row">
+        <div class="input-group">
+          <label class="input-label">DIARIO (USD centavos)</label>
+          <input class="fab-input" id="budget" type="number" value="2000" placeholder="2000 = $20" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">ESTRATEGIA</label>
+          <select class="fab-select" id="bidStrategy">
+            <option value="LOWEST_COST_WITHOUT_CAP">Costo mínimo</option>
+            <option value="COST_CAP">Costo objetivo</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">✍️ Instrucción extra (opcional)</div>
+      <textarea class="fab-textarea" id="extraPrompt" placeholder="ej: Enfócate en la región del Maule, usa tono aspiracional, destaca los 8 años de experiencia..."></textarea>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="launch-btn" id="launchBtn" onclick="launchAgent()">
+      ⚡ LANZAR AGENTE
+    </button>
   </aside>
 
-  <main class="main">
-    <div id="toast"></div>
+  <!-- RIGHT: Agent output -->
+  <main class="right-panel">
 
-    <!-- Dashboard -->
-    <div class="page active" id="page-dashboard">
-      <div class="page-header">
-        <div class="page-title">Dashboard</div>
-        <div class="page-sub">// resumen de tu cuenta publicitaria</div>
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-n" id="statCamps">0</div><div class="stat-l">CAMPAÑAS CREADAS</div></div>
+      <div class="stat-item"><div class="stat-n" id="statAdsets">0</div><div class="stat-l">AD SETS</div></div>
+      <div class="stat-item"><div class="stat-n" id="statReach">—</div><div class="stat-l">ALCANCE EST.</div></div>
+      <div class="stat-item"><div class="stat-n" id="statBudgetTotal">$0</div><div class="stat-l">PRESUPUESTO/DÍA</div></div>
+    </div>
+
+    <!-- Strategy preview -->
+    <div class="strategy-box" id="strategyBox">
+      <div class="strategy-title">ESTRATEGIA GENERADA POR IA</div>
+      <div class="strategy-grid" id="strategyGrid"></div>
+    </div>
+
+    <!-- Agent log -->
+    <div class="agent-log">
+      <div class="log-header">
+        <div class="log-title">LOG DEL AGENTE</div>
+        <div class="log-badge" id="logBadge">EN ESPERA</div>
       </div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">GASTO (14 días)</div><div class="stat-value" id="statSpend">—</div></div>
-        <div class="stat-card"><div class="stat-label">ALCANCE</div><div class="stat-value" id="statReach">—</div></div>
-        <div class="stat-card"><div class="stat-label">IMPRESIONES</div><div class="stat-value" id="statImpr">—</div></div>
-        <div class="stat-card"><div class="stat-label">CONVERSIONES</div><div class="stat-value" id="statConv">—</div></div>
+      <div class="log-body" id="logBody">
+        <div class="log-entry">
+          <span class="log-icon">🏗</span>
+          <span class="log-text">Agente Fabrick ADS inicializado. Configurado para Home Luxury Dropshipping en Sudamérica.</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-icon">🎯</span>
+          <span class="log-text">Briefing cargado: Baños premium, revestimientos PVC mármol, Smart Home.</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-icon">🌍</span>
+          <span class="log-text">Mercados disponibles: Chile (primario), Colombia, México, Perú, Argentina, Ecuador.</span>
+        </div>
+        <div class="log-entry">
+          <span class="log-icon">⚡</span>
+          <span class="log-text yellow">Listo para lanzar. Selecciona categoría y presiona LANZAR AGENTE.</span>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-title">Gasto diario (últimos 14 días)</div>
-        <div class="chart-area" id="chartArea"><div class="empty-state">Cargando…</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Campañas recientes</div>
-        <div id="dashCampaigns"><div class="empty-state">Cargando…</div></div>
+      <div class="thinking hidden" id="thinkingBar">
+        <div class="thinking-dot"></div>
+        <div class="thinking-dot"></div>
+        <div class="thinking-dot"></div>
+        <span class="thinking-label" id="thinkingLabel">AGENTE PENSANDO...</span>
       </div>
     </div>
 
-    <!-- Campaigns -->
-    <div class="page" id="page-campaigns">
-      <div class="page-header">
-        <div class="page-title">Campañas</div>
-        <div class="page-sub">// gestiona todas tus campañas</div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div class="card-title" style="margin:0">LISTA</div>
-          <button class="btn btn-primary" onclick="loadCampaigns()">↻ Actualizar</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Nombre</th><th>Objetivo</th><th>Estado</th><th>Presupuesto</th><th>Acciones</th></tr></thead>
-            <tbody id="campaignTable"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Create -->
-    <div class="page" id="page-create">
-      <div class="page-header">
-        <div class="page-title">Crear Campaña</div>
-        <div class="page-sub">// nueva campaña vía API backend</div>
-      </div>
-      <div id="createAlert" class="alert"></div>
-      <div class="card">
-        <div class="card-title">DATOS BÁSICOS</div>
-        <div class="form-grid">
-          <div class="form-group full"><label class="form-label">NOMBRE</label><input class="form-input" id="campName" placeholder="ej. Black Friday 2025 — Conversiones" /></div>
-          <div class="form-group"><label class="form-label">OBJETIVO</label>
-            <select class="form-select" id="campObjective">
-              <option value="OUTCOME_SALES">Ventas</option>
-              <option value="OUTCOME_LEADS">Leads</option>
-              <option value="OUTCOME_TRAFFIC">Tráfico</option>
-              <option value="OUTCOME_AWARENESS">Reconocimiento</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">ESTADO INICIAL</label>
-            <select class="form-select" id="campStatus">
-              <option value="PAUSED">Pausada</option>
-              <option value="ACTIVE">Activa</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">PRESUPUESTO</div>
-        <div class="pill-row" id="budgetPills">
-          <button class="pill selected" onclick="selectPill('budgetPills',this,'daily')">Diario</button>
-          <button class="pill" onclick="selectPill('budgetPills',this,'lifetime')">Lifetime</button>
-        </div>
-        <div class="form-grid">
-          <div class="form-group"><label class="form-label">MONTO (centavos, ej: 1000 = $10)</label><input class="form-input" id="campBudget" type="number" placeholder="1000" /></div>
-          <div class="form-group"><label class="form-label">BID STRATEGY</label>
-            <select class="form-select" id="campBid">
-              <option value="LOWEST_COST_WITHOUT_CAP">Costo más bajo</option>
-              <option value="LOWEST_COST_WITH_BID_CAP">Costo más bajo con límite</option>
-              <option value="COST_CAP">Costo objetivo</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" onclick="createCampaign()">✨ Crear Campaña</button>
-        <button class="btn btn-ghost" onclick="resetForm()">Limpiar</button>
-      </div>
-      <div id="createResult"></div>
-    </div>
-
-    <!-- Ad Sets -->
-    <div class="page" id="page-adsets">
-      <div class="page-header">
-        <div class="page-title">Ad Sets</div>
-        <div class="page-sub">// conjuntos de anuncios</div>
-      </div>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div class="card-title" style="margin:0">AD SETS</div>
-          <button class="btn btn-primary" onclick="loadAdsets()">↻ Cargar</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Nombre</th><th>Campaña ID</th><th>Estado</th><th>Presupuesto</th><th>Optimización</th></tr></thead>
-            <tbody id="adsetTable"><tr><td colspan="5" class="empty-state">Cargando…</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- Metrics -->
-    <div class="page" id="page-metrics">
-      <div class="page-header">
-        <div class="page-title">Métricas</div>
-        <div class="page-sub">// análisis de rendimiento</div>
-      </div>
-      <div class="card">
-        <div class="card-title">FILTROS</div>
-        <div class="form-grid">
-          <div class="form-group"><label class="form-label">DESDE</label><input class="form-input" id="dateFrom" type="date" /></div>
-          <div class="form-group"><label class="form-label">HASTA</label><input class="form-input" id="dateTo" type="date" /></div>
-          <div class="form-group"><label class="form-label">NIVEL</label>
-            <select class="form-select" id="metricsLevel">
-              <option value="account">Cuenta</option>
-              <option value="campaign">Campaña</option>
-              <option value="adset">Ad Set</option>
-            </select>
-          </div>
-          <div class="form-group" style="align-self:flex-end">
-            <button class="btn btn-primary" onclick="loadMetrics()" style="width:100%">📊 Cargar</button>
-          </div>
-        </div>
-      </div>
-      <div id="metricsResult"></div>
-    </div>
+    <!-- Campaign cards -->
+    <div id="campaignsGrid" class="campaigns-grid"></div>
 
   </main>
 </div>
 
+<div id="toast"></div>
+
 <script>
-  let budgetType = 'daily';
-  const BASE = ''; // En Vercel: '' (mismo dominio). En local: 'http://localhost:3000'
+  // ── CONFIG ──
+  const META_API = 'https://graph.facebook.com/v19.0';
+  const TOKEN = 'EAAK0FOvnZB2ABRGkDxWFEWzX8VdzeTMMsukQpVo8nuWeETIfs7m3gNuEwIh0qhnbQGbZAPVzvtI0zGqp3ZANMsngIZBY13EsZCWMfXDWxlcX0PU1tmc1ZBxZCvYcVVI5D95i2MtPZCsZBTUuFv01a5j27qsLAxrxFpOfrlNc8SexHBEC6dzVbJJ44bs4deB7A';
+  const ACCOUNT = 'act_1133985317028681';
+  const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
 
-  // ── MODAL ──
-  async function checkEnvStatus() {
-    try {
-      const res = await fetch(`${BASE}/api/status`);
-      const data = await res.json();
-      const envMap = {
-        1: data.env?.META_ACCESS_TOKEN,
-        2: data.env?.META_ACCOUNT_ID,
-        3: true, // API_VERSION siempre tiene default
-        4: data.env?.API_SECRET_KEY,
-      };
-      Object.entries(envMap).forEach(([k, v]) => {
-        const el = document.getElementById(`envStatus${k}`);
-        if (v === true || v) { el.textContent = '✓ OK'; el.className = 'env-status ok'; }
-        else { el.textContent = '✗ Falta'; el.className = 'env-status missing'; }
-      });
-      if (data.status === 'ok') {
-        document.getElementById('statusDot').classList.add('ok');
-        document.getElementById('statusText').textContent = 'Conectado';
-        document.getElementById('statusAccount').textContent = data.account?.name || '';
-        document.getElementById('statusCurrency').textContent = `${data.account?.currency || ''} · ${data.account?.timezone || ''}`;
-        document.getElementById('continueBtn').textContent = 'Todo listo ✓';
-        loadDashboard();
-      }
-    } catch(e) {
-      ['1','2','3','4'].forEach(k => {
-        const el = document.getElementById(`envStatus${k}`);
-        el.textContent = '? N/A'; el.className = 'env-status checking';
-      });
-    }
+  let selectedCountries = ['CL'];
+  let campsCreated = 0, adsetsCreated = 0, totalBudget = 0;
+
+  // ── PILLS ──
+  function togglePill(el, country) {
+    el.classList.toggle('on');
+    if (el.classList.contains('on')) selectedCountries.push(country);
+    else selectedCountries = selectedCountries.filter(c => c !== country);
   }
 
-  function showModal() { document.getElementById('envModal').classList.remove('hidden'); }
-  function dismissModal(proceed) {
-    document.getElementById('envModal').classList.add('hidden');
-    if (proceed) toast('✅ Variables verificadas — app lista');
+  // ── LOG ──
+  function log(icon, text, type = '') {
+    const body = document.getElementById('logBody');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `<span class="log-icon">${icon}</span><span class="log-text ${type}">${text}</span>`;
+    body.appendChild(entry);
+    body.scrollTop = body.scrollHeight;
   }
 
-  // ── NAV ──
-  function nav(page, el) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
-    el.classList.add('active');
+  function setThinking(show, label = 'AGENTE PENSANDO...') {
+    const bar = document.getElementById('thinkingBar');
+    bar.classList.toggle('hidden', !show);
+    document.getElementById('thinkingLabel').textContent = label;
   }
 
-  // ── API CALLS ──
-  async function api(path, options = {}) {
-    const res = await fetch(`${BASE}/api/${path}`, {
-      headers: { 'Content-Type': 'application/json', ...options.headers },
-      ...options,
+  function setBadge(text) {
+    document.getElementById('logBadge').textContent = text;
+  }
+
+  // ── STATS ──
+  function updateStats() {
+    document.getElementById('statCamps').textContent = campsCreated;
+    document.getElementById('statAdsets').textContent = adsetsCreated;
+    document.getElementById('statBudgetTotal').textContent = '$' + (totalBudget / 100).toFixed(0);
+    const reach = campsCreated > 0 ? `${(campsCreated * 15).toFixed(0)}K+` : '—';
+    document.getElementById('statReach').textContent = reach;
+  }
+
+  // ── CAMPAIGN CARD ──
+  function addCampaignCard(camp, status = 'creating', metaId = '') {
+    const grid = document.getElementById('campaignsGrid');
+    const card = document.createElement('div');
+    card.className = 'campaign-card';
+    card.id = `card-${camp.id}`;
+    card.innerHTML = `
+      <div class="cc-type">${camp.type}</div>
+      <div class="cc-name">${camp.name}</div>
+      <div class="cc-copy">${camp.copy}</div>
+      <div class="cc-meta">
+        ${camp.tags.map(t => `<span class="cc-tag">${t}</span>`).join('')}
+      </div>
+      <div class="cc-footer">
+        <span class="cc-status ${status}" id="status-${camp.id}">${status === 'creating' ? '⏳ Creando...' : status === 'live' ? '✓ Creada en Meta' : '✗ Error'}</span>
+        <span class="cc-id" id="id-${camp.id}">${metaId}</span>
+      </div>`;
+    grid.appendChild(card);
+    return card;
+  }
+
+  function updateCardStatus(id, status, metaId = '') {
+    const el = document.getElementById(`status-${id}`);
+    const idEl = document.getElementById(`id-${id}`);
+    if (el) { el.className = `cc-status ${status}`; el.textContent = status === 'live' ? '✓ Creada en Meta' : '✗ Error'; }
+    if (idEl && metaId) idEl.textContent = metaId;
+  }
+
+  // ── CLAUDE AI ──
+  async function askClaude(prompt) {
+    const res = await fetch(CLAUDE_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
     });
     const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    return data;
+    return data.content?.[0]?.text || '';
   }
 
-  async function loadDashboard() {
+  // ── META API ──
+  async function createMetaCampaign(name, objective, budget, bidStrategy) {
+    const params = new URLSearchParams({
+      name, objective,
+      status: 'PAUSED',
+      daily_budget: budget,
+      bid_strategy: bidStrategy,
+      special_ad_categories: JSON.stringify([]),
+      access_token: TOKEN
+    });
+    const res = await fetch(`${META_API}/${ACCOUNT}/campaigns`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
+    });
+    return await res.json();
+  }
+
+  // ── STRATEGY DISPLAY ──
+  function showStrategy(strategy) {
+    const box = document.getElementById('strategyBox');
+    box.classList.add('show');
+    document.getElementById('strategyGrid').innerHTML = `
+      <div class="strategy-col">
+        <div class="strategy-col-title">AUDIENCIAS</div>
+        ${strategy.audiences.map(a => `<div class="strategy-item">${a}</div>`).join('')}
+      </div>
+      <div class="strategy-col">
+        <div class="strategy-col-title">KEYWORDS</div>
+        ${strategy.keywords.map(k => `<div class="strategy-item">${k}</div>`).join('')}
+      </div>
+      <div class="strategy-col">
+        <div class="strategy-col-title">MERCADOS</div>
+        ${strategy.markets.map(m => `<div class="strategy-item">${m}</div>`).join('')}
+      </div>`;
+  }
+
+  // ── MAIN AGENT ──
+  async function launchAgent() {
+    const btn = document.getElementById('launchBtn');
+    const category = document.getElementById('category').value;
+    const audience = document.getElementById('audience').value;
+    const budget = parseInt(document.getElementById('budget').value) || 2000;
+    const bidStrategy = document.getElementById('bidStrategy').value;
+    const extra = document.getElementById('extraPrompt').value;
+    const countries = selectedCountries.length > 0 ? selectedCountries : ['CL'];
+
+    if (countries.length === 0) { toast('⚠ Selecciona al menos un país'); return; }
+
+    btn.disabled = true;
+    document.getElementById('campaignsGrid').innerHTML = '';
+    setBadge('EJECUTANDO');
+    setThinking(true, 'GENERANDO ESTRATEGIA CON IA...');
+
+    const categoryNames = {
+      banos: 'Baños & Duchas Premium',
+      revestimientos: 'Revestimientos PVC Mármol & Wall Panels 3D',
+      materiales: 'Materiales & Herramientas Profesionales',
+      smart: 'Smart Home & Iluminación LED',
+      full: 'Línea Completa Fabrick Home Luxury'
+    };
+    const audienceNames = { b2c: 'consumidores finales', b2b: 'profesionales B2B', both: 'B2C y B2B' };
+
+    log('🚀', 'Agente Fabrick ADS iniciado.', 'highlight');
+    log('📋', `Categoría: ${categoryNames[category]}`);
+    log('🎯', `Audiencia: ${audienceNames[audience]}`);
+    log('🌍', `Mercados: ${countries.join(', ')}`);
+    log('💰', `Presupuesto diario: $${(budget/100).toFixed(2)} USD por campaña`);
+
+    // Step 1: Generate strategy with Claude
+    log('🤖', 'Consultando IA para estrategia de segmentación...', 'yellow');
+
+    const strategyPrompt = `Eres un experto en Meta Ads para Latinoamérica. Genera una estrategia de campaña para:
+
+EMPRESA: Soluciones Fabrick — 8 años en construcción, ahora tienda de dropshipping Home Luxury
+CATEGORÍA: ${categoryNames[category]}
+AUDIENCIA: ${audienceNames[audience]}
+PAÍSES: ${countries.join(', ')}
+PRESUPUESTO: $${(budget/100).toFixed(2)} USD/día
+EXTRA: ${extra || 'Ninguna'}
+
+Responde SOLO con un JSON válido sin markdown, con esta estructura exacta:
+{
+  "strategy": {
+    "audiences": ["audiencia 1", "audiencia 2", "audiencia 3", "audiencia 4"],
+    "keywords": ["keyword 1", "keyword 2", "keyword 3", "keyword 4", "keyword 5"],
+    "markets": ["mercado descripción 1", "mercado descripción 2", "mercado descripción 3"]
+  },
+  "campaigns": [
+    {
+      "id": "camp1",
+      "name": "FABRICK | [nombre corto campaña]",
+      "type": "CONVERSIONES B2C",
+      "objective": "OUTCOME_SALES",
+      "copy": "Texto del anuncio persuasivo máximo 2 oraciones. Usa el estilo Fabrick: aspiracional, premium, sin mencionar precio bajo.",
+      "tags": ["tag1", "tag2", "tag3"],
+      "hook": "Titular del anuncio máximo 8 palabras"
+    },
+    {
+      "id": "camp2",
+      "name": "FABRICK | [nombre corto campaña 2]",
+      "type": "LEADS B2B",
+      "objective": "OUTCOME_LEADS",
+      "copy": "Texto para arquitectos y diseñadores. Máximo 2 oraciones.",
+      "tags": ["tag1", "tag2", "tag3"],
+      "hook": "Titular B2B máximo 8 palabras"
+    },
+    {
+      "id": "camp3",
+      "name": "FABRICK | [nombre corto campaña 3]",
+      "type": "TRÁFICO PREMIUM",
+      "objective": "OUTCOME_TRAFFIC",
+      "copy": "Texto para generar tráfico a tienda. Máximo 2 oraciones.",
+      "tags": ["tag1", "tag2", "tag3"],
+      "hook": "Titular tráfico máximo 8 palabras"
+    }
+  ]
+}`;
+
+    let aiResponse;
     try {
-      const ins = await api('insights?date_preset=last_14_days&time_increment=1');
-      if (ins.data && ins.data.length > 0) {
-        const total = ins.data.reduce((acc, d) => ({ spend: acc.spend + parseFloat(d.spend||0), reach: acc.reach + parseInt(d.reach||0), impressions: acc.impressions + parseInt(d.impressions||0) }), {spend:0,reach:0,impressions:0});
-        document.getElementById('statSpend').textContent = '$' + total.spend.toFixed(2);
-        document.getElementById('statReach').textContent = num(total.reach);
-        document.getElementById('statImpr').textContent = num(total.impressions);
-        const allConv = ins.data.flatMap(d => d.actions||[]).filter(a => a.action_type==='purchase').reduce((s,a) => s+parseInt(a.value||0), 0);
-        document.getElementById('statConv').textContent = allConv;
-        // Chart
-        const chartArea = document.getElementById('chartArea');
-        chartArea.innerHTML = '';
-        const max = Math.max(...ins.data.map(d => parseFloat(d.spend||0)));
-        ins.data.forEach((d, i) => {
-          const bar = document.createElement('div'); bar.className = 'bar';
-          const h = max > 0 ? (parseFloat(d.spend||0)/max)*100 : 5;
-          bar.style.height = Math.max(h,3)+'%'; bar.style.animationDelay = (i*0.04)+'s';
-          bar.title = `${d.date_start}: $${parseFloat(d.spend||0).toFixed(2)}`;
-          chartArea.appendChild(bar);
-        });
+      const raw = await askClaude(strategyPrompt);
+      // Clean possible markdown
+      const clean = raw.replace(/```json|```/g, '').trim();
+      aiResponse = JSON.parse(clean);
+      log('✅', 'Estrategia generada por IA exitosamente.', 'success');
+      showStrategy(aiResponse.strategy);
+    } catch(e) {
+      log('⚠️', 'IA no disponible en este entorno. Usando estrategia predeterminada Fabrick.', 'yellow');
+      // Fallback strategy
+      aiResponse = {
+        strategy: {
+          audiences: ['Propietarios de vivienda 28-55', 'Interés en remodelación hogar', 'Comportamiento: mudanza reciente', 'Usuarios dispositivos premium'],
+          keywords: ['ducha termostática', 'revestimiento mármol PVC', 'grifería negra mate', 'smart home hogar', 'materiales construcción premium'],
+          markets: ['Chile (Maule, RM, Biobío)', 'Colombia (Bogotá, Medellín)', 'México (CDMX, Guadalajara)']
+        },
+        campaigns: [
+          {
+            id: 'camp1', name: `FABRICK | ${categoryNames[category].split(' ')[0]} Premium B2C`,
+            type: 'CONVERSIONES B2C', objective: 'OUTCOME_SALES',
+            copy: 'Transforma tu hogar con materiales que solo los proyectos de lujo conocen. Seleccionados por 8 años de obra real, ahora en tu puerta.',
+            tags: ['#LuxuryHome', '#FabrickStyle', countries[0] || 'CL'],
+            hook: 'Tu hogar. El estándar FABRICK.'
+          },
+          {
+            id: 'camp2', name: 'FABRICK | Proveedores B2B Profesionales',
+            type: 'LEADS B2B', objective: 'OUTCOME_LEADS',
+            copy: '¿Arquitecto o diseñador? Accede al catálogo profesional Fabrick. Stock permanente, entrega directa, calidad garantizada por obra.',
+            tags: ['#B2B', '#Arquitectos', '#Diseñadores'],
+            hook: 'El proveedor que las obras premium eligen.'
+          },
+          {
+            id: 'camp3', name: `FABRICK | Tienda ${categoryNames[category].split(' ')[0]} Online`,
+            type: 'TRÁFICO PREMIUM', objective: 'OUTCOME_TRAFFIC',
+            copy: '¿Cansado de los materiales comunes? Descubre el estándar FABRICK para acabados que hablan por sí solos.',
+            tags: ['#Remodelacion', '#HomeStyle', '#Premium'],
+            hook: 'Descubre el estándar FABRICK.'
+          }
+        ]
+      };
+      showStrategy(aiResponse.strategy);
+    }
+
+    // Step 2: Create campaigns in Meta
+    setThinking(true, 'CREANDO CAMPAÑAS EN META ADS...');
+    log('📡', `Creando ${aiResponse.campaigns.length} campañas en Meta Ads...`, 'yellow');
+
+    for (let i = 0; i < aiResponse.campaigns.length; i++) {
+      const camp = aiResponse.campaigns[i];
+      log('⚙️', `[${i+1}/${aiResponse.campaigns.length}] Creando: ${camp.name}`);
+      addCampaignCard(camp, 'creating');
+
+      try {
+        const result = await createMetaCampaign(camp.name, camp.objective, budget, bidStrategy);
+
+        if (result.error) {
+          log('❌', `Error en "${camp.name}": ${result.error.message}`, 'error');
+          updateCardStatus(camp.id, 'error');
+        } else {
+          log('✅', `Campaña creada → ID: ${result.id}`, 'success');
+          updateCardStatus(camp.id, 'live', result.id);
+          campsCreated++;
+          totalBudget += budget;
+          updateStats();
+        }
+      } catch(e) {
+        log('❌', `Fallo de red: ${e.message}`, 'error');
+        updateCardStatus(camp.id, 'error');
       }
-      const camps = await api('campaigns');
-      const el = document.getElementById('dashCampaigns');
-      if (!camps.data || camps.data.length === 0) { el.innerHTML = '<div class="empty-state">No hay campañas</div>'; return; }
-      el.innerHTML = camps.data.slice(0,5).map(c => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
-          <div><div style="font-size:13px;font-weight:600">${c.name}</div><div style="font-size:11px;font-family:var(--mono);color:var(--muted)">${c.objective}</div></div>
-          <span class="badge ${bc(c.status)}">${c.status}</span>
-        </div>`).join('');
-    } catch(e) { toast('Error dashboard: ' + e.message); }
+
+      await new Promise(r => setTimeout(r, 800));
+    }
+
+    setThinking(false);
+    setBadge('COMPLETADO');
+
+    if (campsCreated > 0) {
+      log('🎉', `¡Agente completado! ${campsCreated} campañas creadas en Meta Ads.`, 'success');
+      log('💡', 'Las campañas están en estado PAUSADA. Revísalas en Ads Manager y actívalas cuando estés listo.', 'yellow');
+      toast(`✅ ${campsCreated} campañas creadas en Meta Ads`);
+    } else {
+      log('⚠️', 'No se pudieron crear campañas. Verifica el token y el ID de cuenta.', 'error');
+    }
+
+    btn.disabled = false;
   }
 
-  async function loadCampaigns() {
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 4000);
+  }
+
+  // Init check
+  (async () => {
     try {
-      const data = await api('campaigns');
-      const tbody = document.getElementById('campaignTable');
-      if (!data.data || data.data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay campañas</td></tr>'; return; }
-      tbody.innerHTML = data.data.map(c => `
-        <tr>
-          <td><div style="font-weight:600">${c.name}</div><div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${c.id}</div></td>
-          <td><span class="tag">${c.objective}</span></td>
-          <td><span class="badge ${bc(c.status)}">${c.status}</span></td>
-          <td style="font-family:var(--mono);font-size:12px">${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2)+'/día' : c.lifetime_budget ? '$'+(c.lifetime_budget/100).toFixed(2)+' total' : '—'}</td>
-          <td><div class="action-btns">
-            <button class="icon-btn" onclick="toggleCampaign('${c.id}','${c.status}')">${c.status==='ACTIVE'?'⏸':'▶'}</button>
-            <button class="icon-btn" onclick="deleteCampaign('${c.id}','${c.name}')">🗑</button>
-          </div></td>
-        </tr>`).join('');
-    } catch(e) { toast('Error: ' + e.message); }
-  }
-
-  async function toggleCampaign(id, status) {
-    const newStatus = status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
-    try {
-      await api(`campaigns?id=${id}`, { method: 'POST', body: JSON.stringify({ status: newStatus }) });
-      toast(`✅ Campaña ${newStatus === 'ACTIVE' ? 'activada' : 'pausada'}`);
-      loadCampaigns();
-    } catch(e) { toast('❌ ' + e.message); }
-  }
-
-  async function deleteCampaign(id, name) {
-    if (!confirm(`¿Eliminar "${name}"?`)) return;
-    try {
-      await api(`campaigns?id=${id}`, { method: 'DELETE' });
-      toast('🗑 Eliminada'); loadCampaigns();
-    } catch(e) { toast('❌ ' + e.message); }
-  }
-
-  async function createCampaign() {
-    const name = document.getElementById('campName').value.trim();
-    const objective = document.getElementById('campObjective').value;
-    const status = document.getElementById('campStatus').value;
-    const budget = document.getElementById('campBudget').value;
-    const bid_strategy = document.getElementById('campBid').value;
-    if (!name || !budget) { showAlert('createAlert','error','⚠ Nombre y presupuesto obligatorios'); return; }
-    const body = { name, objective, status, bid_strategy, special_ad_categories: [] };
-    if (budgetType === 'daily') body.daily_budget = budget;
-    else body.lifetime_budget = budget;
-    try {
-      const data = await api('campaigns', { method: 'POST', body: JSON.stringify(body) });
-      showAlert('createAlert','success',`✅ Campaña creada: ${data.id}`);
-      document.getElementById('createResult').innerHTML = `<div class="result-block">${JSON.stringify(data, null, 2)}</div>`;
-      toast('✅ Campaña creada');
-    } catch(e) { showAlert('createAlert','error','❌ ' + e.message); }
-  }
-
-  async function loadAdsets() {
-    try {
-      const data = await api('adsets');
-      const tbody = document.getElementById('adsetTable');
-      if (!data.data || data.data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No hay ad sets</td></tr>'; return; }
-      tbody.innerHTML = data.data.map(a => `
-        <tr>
-          <td><div style="font-weight:600">${a.name}</div><div style="font-size:11px;color:var(--muted);font-family:var(--mono)">${a.id}</div></td>
-          <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${a.campaign_id}</td>
-          <td><span class="badge ${bc(a.status)}">${a.status}</span></td>
-          <td style="font-family:var(--mono);font-size:12px">${a.daily_budget ? '$'+(a.daily_budget/100).toFixed(2)+'/día' : '—'}</td>
-          <td><span class="tag">${a.optimization_goal||'—'}</span></td>
-        </tr>`).join('');
-    } catch(e) { toast('Error: ' + e.message); }
-  }
-
-  async function loadMetrics() {
-    const from = document.getElementById('dateFrom').value;
-    const to = document.getElementById('dateTo').value;
-    const level = document.getElementById('metricsLevel').value;
-    if (!from || !to) { toast('⚠ Selecciona fechas'); return; }
-    try {
-      const data = await api(`insights?since=${from}&until=${to}&level=${level}`);
-      const container = document.getElementById('metricsResult');
-      if (!data.data || data.data.length === 0) { container.innerHTML = '<div class="card"><div class="empty-state">Sin datos para ese período</div></div>'; return; }
-      const rows = data.data.map(d => {
-        const conv = (d.actions||[]).find(a=>a.action_type==='purchase');
-        return `<tr>
-          <td style="font-family:var(--mono);font-size:12px">${d.date_start} → ${d.date_stop}</td>
-          <td style="font-family:var(--mono);font-size:12px">$${parseFloat(d.spend||0).toFixed(2)}</td>
-          <td style="font-family:var(--mono);font-size:12px">${num(d.reach||0)}</td>
-          <td style="font-family:var(--mono);font-size:12px">${num(d.impressions||0)}</td>
-          <td style="font-family:var(--mono);font-size:12px">${num(d.clicks||0)}</td>
-          <td style="font-family:var(--mono);font-size:12px">${parseFloat(d.ctr||0).toFixed(2)}%</td>
-          <td style="font-family:var(--mono);font-size:12px">$${parseFloat(d.cpc||0).toFixed(2)}</td>
-          <td style="font-family:var(--mono);font-size:12px">${conv?conv.value:'—'}</td>
-        </tr>`;
-      }).join('');
-      container.innerHTML = `<div class="card"><div class="card-title">RESULTADOS</div><div class="table-wrap"><table><thead><tr><th>Período</th><th>Gasto</th><th>Alcance</th><th>Impresiones</th><th>Clics</th><th>CTR</th><th>CPC</th><th>Conversiones</th></tr></thead><tbody>${rows}</tbody></table></div><div class="result-block">${JSON.stringify(data.data,null,2)}</div></div>`;
-    } catch(e) { toast('❌ ' + e.message); }
-  }
-
-  // ── HELPERS ──
-  function bc(s) { return s==='ACTIVE'?'badge-active':s==='PAUSED'?'badge-paused':s==='DELETED'?'badge-error':'badge-draft'; }
-  function num(n) { return parseInt(n).toLocaleString('es-MX'); }
-  function selectPill(g, el, v) { document.querySelectorAll(`#${g} .pill`).forEach(p=>p.classList.remove('selected')); el.classList.add('selected'); if(g==='budgetPills') budgetType=v; }
-  function resetForm() { ['campName','campBudget'].forEach(id=>document.getElementById(id).value=''); document.getElementById('createResult').innerHTML=''; document.getElementById('createAlert').className='alert'; }
-  function showAlert(id, type, msg) { const el=document.getElementById(id); el.className=`alert alert-${type} show`; el.textContent=msg; setTimeout(()=>el.classList.remove('show'),5000); }
-  function toast(msg) { const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),3500); }
-
-  // Init
-  const today = new Date();
-  document.getElementById('dateTo').value = today.toISOString().split('T')[0];
-  document.getElementById('dateFrom').value = new Date(today-30*864e5).toISOString().split('T')[0];
-
-  checkEnvStatus();
+      const res = await fetch(`${META_API}/${ACCOUNT}?fields=name,currency&access_token=${TOKEN}`);
+      const data = await res.json();
+      if (data.name) {
+        document.getElementById('accountChip').style.display = 'flex';
+        document.getElementById('accountName').textContent = data.name;
+        log('🔗', `Cuenta Meta conectada: ${data.name} (${data.currency})`, 'success');
+      }
+    } catch(e) {}
+  })();
 </script>
 </body>
 </html>
