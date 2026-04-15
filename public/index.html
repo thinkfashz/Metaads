@@ -1128,7 +1128,7 @@ function applyConfig() {
 function updateModelOptions() {
   const provider = document.getElementById('cfgAiProvider').value;
   const modelSel = document.getElementById('cfgAiModel');
-  modelSel.innerHTML = AI_MODELS[provider].map(m => `<option value="${m}">${m}</option>`).join('');
+  modelSel.innerHTML = AI_MODELS[provider].map(m => `<option value="${escHtml(m)}">${escHtml(m)}</option>`).join('');
 }
 
 function updateAIBadge() {
@@ -1293,7 +1293,7 @@ async function askAI(prompt, systemPrompt = '') {
   }
 
   // Client-side OpenRouter fallback
-  if (!CFG.openRouterKey) throw new Error('Configura una clave de IA en Configuración');
+  if (!CFG.openRouterKey) throw new Error('No se pudo conectar al servidor IA y no hay clave de OpenRouter configurada como fallback. Configura las claves en Vercel o añade una clave de OpenRouter en Configuración.');
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -1380,11 +1380,11 @@ async function loadDashboard() {
               <img src="${OBJ_IMAGES[c.objective] || OBJ_IMAGES.OUTCOME_TRAFFIC}" style="width:100%;height:100%;object-fit:cover" loading="lazy" />
             </div>
             <div style="min-width:0">
-              <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">${c.name}</div>
-              <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px">${c.objective || '—'} · ${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2)+'/día' : 'sin presupuesto'}</div>
+              <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">${escHtml(c.name)}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px">${escHtml(c.objective || '—')} · ${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2)+'/día' : 'sin presupuesto'}</div>
             </div>
           </div>
-          <span style="font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;flex-shrink:0;${statusStyle(c.status)}">${c.status}</span>
+          <span style="font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;flex-shrink:0;${statusStyle(c.status)}">${escHtml(c.status)}</span>
         </div>`).join('');
     }
   } catch(e) { toast('Error dashboard: ' + e.message); }
@@ -1413,21 +1413,21 @@ async function loadCampaigns() {
               <img src="${OBJ_IMAGES[c.objective] || OBJ_IMAGES.OUTCOME_TRAFFIC}" style="width:100%;height:100%;object-fit:cover" loading="lazy" />
             </div>
             <div>
-              <div style="font-weight:700;font-size:13px">${c.name}</div>
-              <div style="font-family:var(--mono);font-size:9px;color:var(--muted2)">${c.id}</div>
+              <div style="font-weight:700;font-size:13px">${escHtml(c.name)}</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--muted2)">${escHtml(c.id)}</div>
             </div>
           </div>
         </td>
-        <td><span style="font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:4px;background:rgba(245,230,66,0.07);color:var(--yellow)">${c.objective || '—'}</span></td>
-        <td><span class="cc-status-badge ${c.status === 'ACTIVE' ? 'active' : c.status === 'PAUSED' ? 'paused' : 'err'}">${c.status}</span></td>
+        <td><span style="font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:4px;background:rgba(245,230,66,0.07);color:var(--yellow)">${escHtml(c.objective || '—')}</span></td>
+        <td><span class="cc-status-badge ${c.status === 'ACTIVE' ? 'active' : c.status === 'PAUSED' ? 'paused' : 'err'}">${escHtml(c.status)}</span></td>
         <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2) : '—'}</td>
         <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">—</td>
         <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">—</td>
         <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">—</td>
         <td>
           <div style="display:flex;gap:6px">
-            <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleCamp('${c.id}','${c.status}')" title="${c.status==='ACTIVE'?'Pausar':'Activar'}">${c.status==='ACTIVE'?'⏸':'▶'}</button>
-            <button class="btn btn-danger btn-icon btn-sm" onclick="deleteCamp('${c.id}','${c.name}')" title="Eliminar">🗑</button>
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleCamp('${escHtml(c.id)}','${escHtml(c.status)}')" title="${c.status==='ACTIVE'?'Pausar':'Activar'}">${c.status==='ACTIVE'?'⏸':'▶'}</button>
+            <button class="btn btn-danger btn-icon btn-sm" onclick="deleteCamp('${escHtml(c.id)}','${escHtml(c.name).replace(/'/g,"\\'")}')" title="Eliminar">🗑</button>
           </div>
         </td>
       </tr>`).join('');
@@ -1811,6 +1811,11 @@ async function loadMetrics() {
 // HELPERS
 // ════════════════════════════════════
 function num(n) { return parseInt(n).toLocaleString('es-CL'); }
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');

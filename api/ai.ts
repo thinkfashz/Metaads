@@ -51,6 +51,7 @@ async function callOpenAI(
     body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature }),
   });
 
+  if (!res.ok && res.status !== 400) throw new Error(`OpenAI HTTP ${res.status}`);
   const data = (await res.json()) as { choices?: { message: { content: string } }[]; error?: { message: string } };
   if (data.error) throw new Error(data.error.message);
   return data.choices?.[0]?.message?.content ?? '';
@@ -85,6 +86,7 @@ async function callAnthropic(
     }),
   });
 
+  if (!res.ok && res.status !== 400) throw new Error(`Anthropic HTTP ${res.status}`);
   const data = (await res.json()) as {
     content?: { type: string; text: string }[];
     error?: { message: string } | string;
@@ -117,6 +119,7 @@ async function callOpenRouter(
     body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature }),
   });
 
+  if (!res.ok && res.status !== 400) throw new Error(`OpenRouter HTTP ${res.status}`);
   const data = (await res.json()) as { choices?: { message: { content: string } }[]; error?: { message: string } };
   if (data.error) throw new Error(data.error.message);
   return data.choices?.[0]?.message?.content ?? '';
@@ -150,6 +153,7 @@ async function callGemini(
     }
   );
 
+  if (!res.ok && res.status !== 400) throw new Error(`Gemini HTTP ${res.status}`);
   const data = (await res.json()) as {
     candidates?: { content: { parts: { text: string }[] } }[];
     error?: { message: string };
@@ -181,6 +185,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!provider || !messages?.length) {
     return res.status(400).json({ error: 'Se requieren los campos: provider, messages' });
+  }
+
+  const validProviders: AIProvider[] = ['openai', 'anthropic', 'openrouter', 'gemini'];
+  if (!validProviders.includes(provider as AIProvider)) {
+    return res.status(400).json({ error: `Proveedor no válido: ${provider}. Use: ${validProviders.join(', ')}` });
   }
 
   const resolvedModel = model || DEFAULT_MODELS[provider as AIProvider] || DEFAULT_MODELS.openrouter;
