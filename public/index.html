@@ -4,32 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>FABRICK — Agente ADS ⚡</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
 <style>
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0d0d12;
-  --bg2:#13131a;
-  --bg3:#1a1a24;
+  --bg:#070710;
+  --bg2:#0d0d1a;
+  --bg3:#131325;
+  --bg4:#181830;
   --yellow:#f5e642;
   --yellow2:#ffc107;
-  --yellow-glow:rgba(245,230,66,0.15);
+  --yellow3:#ffe066;
+  --yellow-glow:rgba(245,230,66,0.18);
+  --yellow-dim:rgba(245,230,66,0.06);
   --glass:rgba(255,255,255,0.04);
-  --glass2:rgba(255,255,255,0.08);
-  --glass3:rgba(255,255,255,0.12);
-  --border:rgba(255,255,255,0.08);
-  --border2:rgba(255,255,255,0.14);
-  --white:#f0f0f8;
-  --muted:#7a7a90;
-  --muted2:#555568;
+  --glass2:rgba(255,255,255,0.07);
+  --glass3:rgba(255,255,255,0.11);
+  --glass4:rgba(255,255,255,0.16);
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --border3:rgba(255,255,255,0.22);
+  --white:#f0f0fa;
+  --muted:#6a6a84;
+  --muted2:#4a4a62;
   --success:#00e5a0;
   --danger:#ff4455;
   --info:#4fc3f7;
+  --purple:#b57bff;
   --bebas:'Bebas Neue',sans-serif;
   --jakarta:'Plus Jakarta Sans',sans-serif;
   --mono:'JetBrains Mono',monospace;
-  --radius:16px;
-  --radius-sm:10px;
+  --radius:18px;
+  --radius-sm:12px;
+  --radius-xs:8px;
+  --shadow-sm:0 4px 16px rgba(0,0,0,0.3);
+  --shadow-md:0 8px 32px rgba(0,0,0,0.4);
+  --shadow-lg:0 16px 64px rgba(0,0,0,0.5);
+  --shadow-yellow:0 8px 32px rgba(245,230,66,0.2);
 }
 
 html{scroll-behavior:smooth}
@@ -41,477 +56,521 @@ body{
   overflow-x:hidden;
 }
 
-/* ═══════════════════════════════════
-   GRAIN + BACKGROUND EFFECTS
-═══════════════════════════════════ */
-.bg-mesh{
-  position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(ellipse 80% 60% at 10% 90%, rgba(245,230,66,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 90% 10%, rgba(79,195,247,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 50% 50%, rgba(20,20,35,0.8) 0%, transparent 100%);
+/* ── BACKGROUND ────────────────────────────── */
+.bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.bg-orb{
+  position:absolute;border-radius:50%;
+  filter:blur(80px);pointer-events:none;
 }
+.bg-orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(245,230,66,0.07),transparent 70%);top:-200px;right:-100px;}
+.bg-orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(79,195,247,0.05),transparent 70%);bottom:-150px;left:-100px;}
+.bg-orb-3{width:400px;height:400px;background:radial-gradient(circle,rgba(181,123,255,0.04),transparent 70%);top:40%;left:50%;}
 .grain{
-  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.35;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.25;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+#particles{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;pointer-events:none;}
 
-/* ═══════════════════════════════════
-   LIQUID GLASS BUTTON EFFECT
-═══════════════════════════════════ */
-.glass-btn{
-  position:relative;
-  background:linear-gradient(135deg,rgba(255,255,255,0.12) 0%,rgba(255,255,255,0.04) 100%);
-  border:1px solid rgba(255,255,255,0.18);
-  border-radius:var(--radius-sm);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  cursor:pointer;
-  overflow:hidden;
-  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  color:var(--white);
-  font-family:var(--jakarta);
-  font-weight:600;
-}
-.glass-btn::before{
-  content:'';position:absolute;
-  top:-50%;left:-50%;width:200%;height:200%;
-  background:conic-gradient(from 0deg,transparent 0%,rgba(255,255,255,0.08) 20%,transparent 40%);
-  animation:rotate 6s linear infinite;opacity:0;transition:opacity 0.3s;
-}
-.glass-btn::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,rgba(255,255,255,0.15) 0%,transparent 50%,rgba(0,0,0,0.2) 100%);
-  border-radius:inherit;pointer-events:none;
-}
-.glass-btn:hover{
-  transform:translateY(-3px) scale(1.02);
-  border-color:rgba(255,255,255,0.3);
-  box-shadow:0 12px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.2);
-}
-.glass-btn:hover::before{opacity:1;}
-.glass-btn:active{transform:translateY(0) scale(0.98);}
-@keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-
-/* Yellow primary glass button */
-.glass-btn-yellow{
-  background:linear-gradient(135deg,rgba(245,230,66,0.9) 0%,rgba(255,193,7,0.8) 100%);
-  border:1px solid rgba(245,230,66,0.6);
-  color:#0d0d12;
-  font-weight:700;
-  box-shadow:0 4px 20px rgba(245,230,66,0.25),inset 0 1px 0 rgba(255,255,255,0.4);
-}
-.glass-btn-yellow:hover{
-  box-shadow:0 12px 40px rgba(245,230,66,0.4),inset 0 1px 0 rgba(255,255,255,0.5);
-  background:linear-gradient(135deg,rgba(255,240,80,0.95) 0%,rgba(255,200,20,0.9) 100%);
-}
-
-/* Red danger glass */
-.glass-btn-red{
-  background:linear-gradient(135deg,rgba(255,68,85,0.8) 0%,rgba(200,30,50,0.7) 100%);
-  border:1px solid rgba(255,68,85,0.4);
-  color:white;
-  box-shadow:0 4px 20px rgba(255,68,85,0.2);
-}
-
-/* Glass panel */
-.glass-panel{
-  background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);
-  border:1px solid var(--border);
+/* ── GLASS UTILS ───────────────────────────── */
+.glass-card{
+  background:linear-gradient(135deg,rgba(255,255,255,0.055) 0%,rgba(255,255,255,0.015) 100%);
+  border:1px solid var(--border2);
   border-radius:var(--radius);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
   position:relative;overflow:hidden;
 }
-.glass-panel::before{
+.glass-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.2) 50%,transparent 100%);
+  pointer-events:none;
 }
 
-/* Glass input */
+/* ── BUTTONS ───────────────────────────────── */
+.btn{
+  position:relative;cursor:pointer;overflow:hidden;
+  font-family:var(--jakarta);font-weight:700;
+  border:none;border-radius:var(--radius-sm);
+  transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),
+             box-shadow 0.25s ease,
+             background 0.25s ease;
+  display:inline-flex;align-items:center;gap:7px;
+  white-space:nowrap;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,0.12) 0%,transparent 50%);
+  pointer-events:none;border-radius:inherit;
+}
+.btn:hover{transform:translateY(-2px) scale(1.02);}
+.btn:active{transform:translateY(0) scale(0.98);}
+
+.btn-ghost{
+  background:var(--glass2);
+  border:1px solid var(--border2);
+  color:var(--white);
+  box-shadow:var(--shadow-sm);
+}
+.btn-ghost:hover{
+  background:var(--glass3);
+  border-color:var(--border3);
+  box-shadow:var(--shadow-md);
+}
+.btn-yellow{
+  background:linear-gradient(135deg,#f5e642 0%,#ffc107 100%);
+  color:#080710;
+  box-shadow:var(--shadow-yellow);
+}
+.btn-yellow:hover{
+  background:linear-gradient(135deg,#fff066 0%,#ffcc22 100%);
+  box-shadow:0 12px 40px rgba(245,230,66,0.35);
+}
+.btn-danger{
+  background:linear-gradient(135deg,rgba(255,68,85,0.85),rgba(200,30,50,0.75));
+  color:white;border:1px solid rgba(255,68,85,0.35);
+}
+.btn-danger:hover{box-shadow:0 8px 24px rgba(255,68,85,0.3);}
+.btn-icon{padding:8px 10px;font-size:13px;}
+.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-md{padding:10px 20px;font-size:13px;}
+.btn-lg{padding:13px 28px;font-size:14px;}
+.btn-xl{padding:18px 32px;font-size:16px;}
+.btn-block{width:100%;justify-content:center;}
+
+/* Shimmer launch button */
+.btn-launch{
+  width:100%;padding:20px;border-radius:var(--radius);
+  background:linear-gradient(135deg,#f5e642 0%,#ffc107 50%,#f5e642 100%);
+  background-size:200% 200%;
+  color:#080710;border:none;cursor:pointer;
+  font-family:var(--bebas);font-size:28px;letter-spacing:0.2em;
+  position:relative;overflow:hidden;
+  animation:shimmerBtn 3s ease-in-out infinite;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.btn-launch::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,0.2) 0%,transparent 50%);
+  border-radius:inherit;pointer-events:none;
+}
+.btn-launch:hover{transform:translateY(-3px);box-shadow:0 20px 60px rgba(245,230,66,0.45);}
+.btn-launch:active{transform:translateY(0);}
+.btn-launch:disabled{opacity:0.4;cursor:not-allowed;transform:none !important;animation:none;}
+@keyframes shimmerBtn{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+/* ── FORMS ─────────────────────────────────── */
 .glass-input,.glass-select,.glass-textarea{
-  background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);
-  border:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(255,255,255,0.055) 0%,rgba(255,255,255,0.02) 100%);
+  border:1px solid var(--border2);
   border-radius:var(--radius-sm);
   color:var(--white);
-  font-family:var(--jakarta);
-  font-size:13px;
-  padding:11px 16px;
-  outline:none;
-  width:100%;
-  transition:all 0.25s;
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
+  font-family:var(--jakarta);font-size:13px;
+  padding:12px 16px;outline:none;width:100%;
+  transition:border-color 0.25s,box-shadow 0.25s,background 0.25s;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
 .glass-input:focus,.glass-select:focus,.glass-textarea:focus{
   border-color:rgba(245,230,66,0.5);
-  box-shadow:0 0 0 3px rgba(245,230,66,0.08),inset 0 1px 0 rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.08);
+  box-shadow:0 0 0 3px rgba(245,230,66,0.08);
+  background:rgba(255,255,255,0.07);
 }
 .glass-input::placeholder{color:var(--muted);}
-.glass-select option{background:#1a1a24;color:var(--white);}
-.glass-textarea{resize:vertical;min-height:80px;line-height:1.6;}
+.glass-select option{background:#131325;color:var(--white);}
+.glass-textarea{resize:vertical;min-height:88px;line-height:1.6;}
+.inp-group{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;}
+.inp-label{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;}
 
-/* ═══════════════════════════════════
-   LAYOUT
-═══════════════════════════════════ */
+/* ── TOGGLE ────────────────────────────────── */
+.toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:12px 0;}
+.toggle-label{font-size:13px;font-weight:600;}
+.toggle-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:46px;height:26px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{
+  position:absolute;inset:0;border-radius:13px;cursor:pointer;
+  background:var(--glass3);border:1px solid var(--border2);
+  transition:all 0.3s;
+}
+.toggle-slider::before{
+  content:'';position:absolute;
+  height:20px;width:20px;left:2px;bottom:2px;
+  border-radius:50%;background:var(--muted2);
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+input:checked+.toggle-slider{background:rgba(245,230,66,0.25);border-color:rgba(245,230,66,0.5);}
+input:checked+.toggle-slider::before{transform:translateX(20px);background:var(--yellow);}
+
+/* ── LAYOUT ────────────────────────────────── */
 .wrapper{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;}
 
-/* HEADER */
+/* ── TOPBAR ────────────────────────────────── */
 .topbar{
-  height:60px;
+  height:64px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px;
+  padding:0 28px;
   border-bottom:1px solid var(--border);
-  background:rgba(13,13,18,0.8);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  position:sticky;top:0;z-index:200;
-  flex-shrink:0;
+  background:rgba(7,7,16,0.85);
+  backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);
+  position:sticky;top:0;z-index:200;flex-shrink:0;
 }
-.brand{display:flex;align-items:center;gap:10px;}
+.brand{display:flex;align-items:center;gap:12px;cursor:default;user-select:none;}
 .brand-hex{
-  width:34px;height:34px;
+  width:38px;height:38px;
   background:linear-gradient(135deg,var(--yellow),var(--yellow2));
   clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
   display:flex;align-items:center;justify-content:center;
-  font-family:var(--bebas);font-size:16px;color:#0d0d12;
-  animation:hexPulse 3s ease-in-out infinite;
+  font-family:var(--bebas);font-size:17px;color:#080710;
+  filter:drop-shadow(0 0 8px rgba(245,230,66,0.5));
 }
-@keyframes hexPulse{0%,100%{filter:drop-shadow(0 0 4px rgba(245,230,66,0.4))}50%{filter:drop-shadow(0 0 12px rgba(245,230,66,0.7))}}
-.brand-name{font-family:var(--bebas);font-size:20px;letter-spacing:0.15em;}
-.brand-sub{font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:0.2em;margin-top:-2px;}
+.brand-name{font-family:var(--bebas);font-size:22px;letter-spacing:0.15em;line-height:1;}
+.brand-sub{font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:0.25em;margin-top:1px;}
 .topbar-right{display:flex;align-items:center;gap:10px;}
 .chip{
-  display:flex;align-items:center;gap:6px;
-  padding:5px 12px;border-radius:20px;
+  display:flex;align-items:center;gap:7px;
+  padding:6px 14px;border-radius:20px;
   font-family:var(--mono);font-size:10px;
-  background:var(--glass);border:1px solid var(--border);color:var(--muted);
+  background:var(--glass2);border:1px solid var(--border);color:var(--muted);
+  transition:all 0.3s;
 }
-.chip .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);}
-.chip .dot.live{background:var(--success);box-shadow:0 0 8px var(--success);animation:blink 2s infinite;}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}
+.chip.connected{border-color:rgba(0,229,160,0.25);color:var(--white);}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted2);transition:all 0.3s;}
+.dot.live{background:var(--success);box-shadow:0 0 10px var(--success);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.dot.live{animation:pulse 2s infinite;}
 
-/* TABS NAV */
+/* ── TABS ──────────────────────────────────── */
 .tabs-nav{
-  display:flex;gap:4px;padding:12px 24px;
+  display:flex;gap:4px;padding:10px 24px;
   border-bottom:1px solid var(--border);
-  background:rgba(13,13,18,0.6);
-  backdrop-filter:blur(10px);
+  background:rgba(7,7,16,0.7);
+  backdrop-filter:blur(16px);
   overflow-x:auto;flex-shrink:0;
 }
 .tabs-nav::-webkit-scrollbar{height:2px;}
-.tabs-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.tabs-nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 .tab-btn{
-  padding:7px 16px;border-radius:8px;
-  font-size:12px;font-weight:600;font-family:var(--jakarta);
+  padding:8px 18px;border-radius:var(--radius-xs);
+  font-size:12px;font-weight:700;font-family:var(--jakarta);
   border:none;cursor:pointer;white-space:nowrap;
-  transition:all 0.2s;
-  background:transparent;color:var(--muted);
+  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  background:transparent;color:var(--muted);letter-spacing:0.02em;
 }
 .tab-btn.active{
-  background:linear-gradient(135deg,rgba(245,230,66,0.15),rgba(255,193,7,0.1));
-  color:var(--yellow);border:1px solid rgba(245,230,66,0.3);
+  background:linear-gradient(135deg,rgba(245,230,66,0.16),rgba(255,193,7,0.08));
+  color:var(--yellow);border:1px solid rgba(245,230,66,0.28);
+  box-shadow:0 2px 12px rgba(245,230,66,0.1);
 }
-.tab-btn:hover:not(.active){background:var(--glass);color:var(--white);}
+.tab-btn:hover:not(.active){background:var(--glass2);color:var(--white);}
 
-/* MAIN CONTENT */
-.content{flex:1;padding:24px;display:none;}
+/* ── TAB CONTENT ───────────────────────────── */
+.content{flex:1;padding:28px;display:none;opacity:1;}
 .content.active{display:block;}
 
-/* SECTION HEADER */
-.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
-.section-title{font-family:var(--bebas);font-size:28px;letter-spacing:0.1em;}
-.section-label{font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:6px;}
+/* ── SECTION HEADER ─────────────────────────── */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:14px;}
+.section-label{font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:0.25em;text-transform:uppercase;margin-bottom:6px;display:block;}
+.section-title{font-family:var(--bebas);font-size:32px;letter-spacing:0.08em;line-height:1;}
+.section-sub{font-size:13px;color:var(--muted);margin-top:4px;font-weight:400;}
 
-/* GRID */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+/* ── GRIDS ─────────────────────────────────── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;}
 
-/* STATS ROW */
+/* ── STAT CARDS ─────────────────────────────── */
 .stat-card{
-  padding:20px;border-radius:var(--radius);
-  background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.01) 100%);
-  border:1px solid var(--border);
+  padding:24px;border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(255,255,255,0.055) 0%,rgba(255,255,255,0.015) 100%);
+  border:1px solid var(--border2);
   position:relative;overflow:hidden;
-  transition:transform 0.2s,box-shadow 0.2s;
+  transition:transform 0.3s,box-shadow 0.3s;
 }
-.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3);}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+}
 .stat-card::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--yellow),var(--yellow2));
-  transform:scaleX(0);transform-origin:left;transition:transform 0.3s;
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
 }
+.stat-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
 .stat-card:hover::after{transform:scaleX(1);}
-.stat-n{font-family:var(--bebas);font-size:36px;color:var(--yellow);letter-spacing:0.05em;line-height:1;}
-.stat-l{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;margin-top:4px;}
-.stat-delta{font-size:11px;color:var(--success);font-family:var(--mono);margin-top:6px;}
+.stat-icon{font-size:22px;margin-bottom:12px;display:block;}
+.stat-n{font-family:var(--bebas);font-size:42px;color:var(--yellow);letter-spacing:0.04em;line-height:1;}
+.stat-l{font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.12em;margin-top:6px;}
+.stat-delta{font-size:11px;color:var(--success);font-family:var(--mono);margin-top:6px;display:flex;align-items:center;gap:4px;}
 
-/* INPUT GROUP */
-.inp-group{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-.inp-label{font-size:10px;font-family:var(--mono);color:var(--muted);letter-spacing:0.1em;}
-
-/* PILL TOGGLE */
-.pill-row{display:flex;flex-wrap:wrap;gap:6px;}
-.pill{
-  padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;
-  border:1px solid var(--border);cursor:pointer;transition:all 0.2s;
-  background:var(--glass);color:var(--muted);font-family:var(--jakarta);
+/* ── CAMPAIGN CARDS ─────────────────────────── */
+.camp-card{
+  border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(255,255,255,0.055) 0%,rgba(255,255,255,0.015) 100%);
+  border:1px solid var(--border2);
+  position:relative;overflow:hidden;
+  transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.35s;
+  transform-style:preserve-3d;
 }
-.pill.on{
-  background:linear-gradient(135deg,rgba(245,230,66,0.2),rgba(255,193,7,0.1));
-  color:var(--yellow);border-color:rgba(245,230,66,0.4);
-  box-shadow:0 0 12px rgba(245,230,66,0.15);
+.camp-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
+.camp-card-img{
+  width:100%;height:160px;object-fit:cover;
+  background:linear-gradient(135deg,#131325,#1e1e3a);
+  position:relative;overflow:hidden;
 }
+.camp-card-img-inner{
+  width:100%;height:100%;
+  background-size:cover;background-position:center;
+  transition:transform 0.6s ease;
+}
+.camp-card:hover .camp-card-img-inner{transform:scale(1.06);}
+.camp-card-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,rgba(7,7,16,0.8) 100%);
+}
+.camp-card-body{padding:18px 20px 20px;}
+.camp-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.cc-type{
+  font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:0.25em;
+  background:rgba(245,230,66,0.1);padding:3px 10px;border-radius:20px;
+  border:1px solid rgba(245,230,66,0.2);
+}
+.cc-status-badge{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;}
+.cc-status-badge.active{background:rgba(0,229,160,0.12);color:var(--success);border:1px solid rgba(0,229,160,0.2);}
+.cc-status-badge.paused{background:rgba(245,230,66,0.1);color:var(--yellow);border:1px solid rgba(245,230,66,0.2);}
+.cc-status-badge.err{background:rgba(255,68,85,0.1);color:var(--danger);border:1px solid rgba(255,68,85,0.2);}
+.cc-status-badge.creating{background:rgba(79,195,247,0.1);color:var(--info);border:1px solid rgba(79,195,247,0.2);}
+.cc-name{font-family:var(--bebas);font-size:20px;letter-spacing:0.05em;line-height:1.1;margin-bottom:10px;}
+.cc-copy{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px;border-left:2px solid rgba(245,230,66,0.35);padding-left:12px;}
+.cc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;}
+.cc-tag{padding:3px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);background:rgba(245,230,66,0.07);color:var(--yellow);border:1px solid rgba(245,230,66,0.14);}
+.cc-hook{font-size:13px;font-weight:700;color:var(--white);margin-bottom:10px;font-style:italic;}
+.cc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);}
+.cc-id{font-family:var(--mono);font-size:9px;color:var(--muted2);}
 
-/* LOG */
+/* ── METRICS BAR CHART ──────────────────────── */
+.chart-wrap{
+  height:160px;display:flex;align-items:flex-end;gap:4px;padding:8px 0 4px;
+}
+.chart-bar{
+  flex:1;border-radius:4px 4px 0 0;min-height:4px;
+  background:linear-gradient(to top,var(--yellow),var(--yellow3));
+  opacity:0.75;cursor:pointer;
+  transition:opacity 0.2s,transform 0.2s;
+  transform-origin:bottom;
+  position:relative;
+}
+.chart-bar:hover{opacity:1;transform:scaleY(1.04);}
+
+/* ── LOG ────────────────────────────────────── */
 .log-wrap{
   border-radius:var(--radius);overflow:hidden;
-  background:rgba(0,0,0,0.3);border:1px solid var(--border);
+  background:rgba(0,0,0,0.35);border:1px solid var(--border);
 }
 .log-hdr{
-  padding:14px 18px;border-bottom:1px solid var(--border);
+  padding:14px 20px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;justify-content:space-between;
   background:var(--glass);
 }
-.log-title{font-family:var(--mono);font-size:11px;letter-spacing:0.15em;color:var(--muted);}
+.log-title{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:var(--muted);}
 .log-badge{
-  font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;
-  background:rgba(245,230,66,0.1);color:var(--yellow);border:1px solid rgba(245,230,66,0.2);
+  font-family:var(--mono);font-size:10px;padding:3px 12px;border-radius:20px;
+  background:rgba(245,230,66,0.08);color:var(--yellow);border:1px solid rgba(245,230,66,0.18);
+  transition:all 0.3s;
 }
+.log-badge.running{background:rgba(79,195,247,0.1);color:var(--info);border-color:rgba(79,195,247,0.25);}
+.log-badge.done{background:rgba(0,229,160,0.1);color:var(--success);border-color:rgba(0,229,160,0.25);}
+.log-badge.error{background:rgba(255,68,85,0.1);color:var(--danger);border-color:rgba(255,68,85,0.25);}
 .log-body{
-  height:300px;overflow-y:auto;padding:14px 18px;
+  height:320px;overflow-y:auto;padding:14px 20px;
   display:flex;flex-direction:column;gap:8px;
   font-family:var(--mono);font-size:11px;
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
 }
 .log-body::-webkit-scrollbar{width:3px;}
 .log-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
-.log-entry{display:flex;gap:10px;align-items:flex-start;animation:logIn 0.25s ease;}
-@keyframes logIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
-.log-ico{min-width:18px;font-size:12px;}
-.log-txt{color:var(--muted);line-height:1.5;}
+.log-entry{display:flex;gap:10px;align-items:flex-start;}
+.log-ico{min-width:18px;font-size:12px;flex-shrink:0;}
+.log-txt{color:var(--muted);line-height:1.55;}
 .log-txt.hi{color:var(--white);}
 .log-txt.ok{color:var(--success);}
 .log-txt.warn{color:var(--yellow);}
 .log-txt.err{color:var(--danger);}
 .log-txt.info{color:var(--info);}
-
-/* THINKING */
 .thinking{
-  padding:10px 18px;border-top:1px solid var(--border);
+  padding:12px 20px;border-top:1px solid var(--border);
   display:flex;align-items:center;gap:8px;
 }
 .thinking.hidden{display:none;}
-.t-dot{width:5px;height:5px;border-radius:50%;background:var(--yellow);animation:bounce 1.2s infinite;}
-.t-dot:nth-child(2){animation-delay:.2s}.t-dot:nth-child(3){animation-delay:.4s}
-@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
-.t-label{font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:0.1em;}
+.t-dot{width:5px;height:5px;border-radius:50%;background:var(--yellow);}
+.t-label{font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:0.12em;}
 
-/* CAMPAIGN CARD */
-.camp-card{
-  border-radius:var(--radius);padding:20px;
-  background:linear-gradient(135deg,rgba(255,255,255,0.05) 0%,rgba(255,255,255,0.01) 100%);
-  border:1px solid var(--border);
-  position:relative;overflow:hidden;
-  animation:cardUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
-}
-@keyframes cardUp{from{opacity:0;transform:translateY(20px) scale(0.95)}to{opacity:1;transform:none scale(1)}}
-.camp-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--yellow),var(--yellow2),transparent);
-}
-.camp-card-glow{
-  position:absolute;top:-30px;right:-30px;width:100px;height:100px;
-  background:radial-gradient(circle,rgba(245,230,66,0.08),transparent 70%);
-  pointer-events:none;
-}
-.cc-type{font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:0.2em;margin-bottom:8px;}
-.cc-name{font-family:var(--bebas);font-size:18px;letter-spacing:0.05em;line-height:1.1;margin-bottom:10px;}
-.cc-copy{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:12px;border-left:2px solid rgba(245,230,66,0.4);padding-left:10px;}
-.cc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
-.cc-tag{padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:rgba(245,230,66,0.08);color:var(--yellow);border:1px solid rgba(245,230,66,0.15);}
-.cc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);}
-.cc-status{font-family:var(--mono);font-size:10px;}
-.cc-status.live{color:var(--success);}
-.cc-status.pending{color:var(--yellow);}
-.cc-status.err{color:var(--danger);}
-.cc-id{font-family:var(--mono);font-size:9px;color:var(--muted2);}
-
-/* ANALYSIS BOX */
-.analysis-box{
-  border-radius:var(--radius);padding:24px;
-  background:linear-gradient(135deg,rgba(79,195,247,0.05),rgba(245,230,66,0.02));
-  border:1px solid rgba(79,195,247,0.15);
-  margin-bottom:20px;
-  display:none;
-}
-.analysis-box.show{display:block;animation:cardUp 0.4s ease;}
-.analysis-title{font-family:var(--bebas);font-size:20px;letter-spacing:0.1em;margin-bottom:16px;color:var(--info);}
-.analysis-content{font-size:13px;color:var(--muted);line-height:1.8;white-space:pre-wrap;}
-
-/* STRATEGY GRID */
+/* ── STRATEGY BOX ───────────────────────────── */
 .strategy-box{
-  border-radius:var(--radius);padding:22px;
+  border-radius:var(--radius);padding:24px;
   background:linear-gradient(135deg,rgba(245,230,66,0.04),rgba(255,193,7,0.01));
   border:1px solid rgba(245,230,66,0.12);
   margin-bottom:20px;display:none;
 }
-.strategy-box.show{display:block;animation:cardUp 0.35s ease;}
-.strategy-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;}
-.s-col-title{font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:0.2em;margin-bottom:10px;}
-.s-item{font-size:12px;color:var(--muted);display:flex;gap:6px;margin-bottom:6px;align-items:flex-start;}
+.strategy-box.show{display:block;}
+.strategy-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:24px;}
+.s-col-title{font-family:var(--mono);font-size:9px;color:var(--yellow);letter-spacing:0.25em;margin-bottom:12px;text-transform:uppercase;}
+.s-item{font-size:12px;color:var(--muted);display:flex;gap:7px;margin-bottom:7px;align-items:flex-start;line-height:1.5;}
 .s-item::before{content:'→';color:var(--yellow);font-size:10px;margin-top:2px;flex-shrink:0;}
 
-/* SKILLS PANEL */
+/* ── SKILL CARDS ────────────────────────────── */
 .skill-card{
-  border-radius:var(--radius);padding:18px;
+  border-radius:var(--radius);padding:20px;
   background:var(--glass);border:1px solid var(--border);
-  transition:all 0.2s;cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);cursor:pointer;
+  position:relative;overflow:hidden;
 }
-.skill-card:hover{border-color:rgba(245,230,66,0.3);background:rgba(245,230,66,0.04);}
-.skill-card.active{border-color:rgba(245,230,66,0.5);background:rgba(245,230,66,0.06);}
-.skill-name{font-weight:700;font-size:14px;margin-bottom:4px;}
-.skill-desc{font-size:12px;color:var(--muted);line-height:1.5;}
-.skill-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);margin-top:8px;}
+.skill-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,230,66,0.04),transparent);opacity:0;transition:opacity 0.3s;}
+.skill-card:hover{border-color:rgba(245,230,66,0.3);transform:translateY(-3px);box-shadow:var(--shadow-md);}
+.skill-card:hover::before{opacity:1;}
+.skill-card.active{border-color:rgba(245,230,66,0.5);}
+.skill-name{font-weight:700;font-size:15px;margin-bottom:6px;}
+.skill-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.skill-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:10px;font-family:var(--mono);margin-top:10px;}
 .skill-badge.saved{background:rgba(0,229,160,0.1);color:var(--success);border:1px solid rgba(0,229,160,0.2);}
 .skill-badge.local{background:rgba(245,230,66,0.1);color:var(--yellow);border:1px solid rgba(245,230,66,0.2);}
 
-/* GITHUB PANEL */
-.github-panel{
-  border-radius:var(--radius);padding:24px;
+/* ── ANALYSIS BOX ───────────────────────────── */
+.analysis-box{
+  border-radius:var(--radius);padding:26px;
+  background:linear-gradient(135deg,rgba(79,195,247,0.05),rgba(245,230,66,0.02));
+  border:1px solid rgba(79,195,247,0.15);
+  margin-bottom:20px;display:none;
+}
+.analysis-box.show{display:block;}
+.analysis-title{font-family:var(--bebas);font-size:22px;letter-spacing:0.1em;margin-bottom:16px;color:var(--info);}
+.analysis-content{font-size:13px;color:var(--muted);line-height:1.9;white-space:pre-wrap;font-family:var(--mono);}
+
+/* ── AI PROVIDER BADGE ──────────────────────── */
+.ai-provider-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:20px;
+  font-family:var(--mono);font-size:10px;
+  background:rgba(181,123,255,0.1);color:var(--purple);
+  border:1px solid rgba(181,123,255,0.25);
+}
+
+/* ── PROGRESS BAR ───────────────────────────── */
+.progress-wrap{margin:14px 0;}
+.progress-bar-bg{height:4px;background:var(--glass3);border-radius:2px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:2px;transition:width 0.6s cubic-bezier(0.25,0.46,0.45,0.94);
+  background:linear-gradient(90deg,var(--yellow),var(--yellow2));width:0;}
+
+/* ── PILLS ──────────────────────────────────── */
+.pill-row{display:flex;flex-wrap:wrap;gap:7px;}
+.pill{
+  padding:7px 16px;border-radius:20px;font-size:11px;font-weight:700;
+  border:1px solid var(--border2);cursor:pointer;transition:all 0.25s;
+  background:var(--glass);color:var(--muted);font-family:var(--jakarta);
+}
+.pill.on{
+  background:linear-gradient(135deg,rgba(245,230,66,0.18),rgba(255,193,7,0.1));
+  color:var(--yellow);border-color:rgba(245,230,66,0.4);
+  box-shadow:0 0 14px rgba(245,230,66,0.12);
+}
+
+/* ── TABLE ──────────────────────────────────── */
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table thead tr{border-bottom:1px solid var(--border);}
+.data-table th{
+  padding:14px 18px;text-align:left;
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  letter-spacing:0.12em;font-weight:400;white-space:nowrap;
+}
+.data-table tbody tr{
+  border-bottom:1px solid var(--border);
+  transition:background 0.2s;
+}
+.data-table tbody tr:hover{background:rgba(255,255,255,0.025);}
+.data-table td{padding:14px 18px;vertical-align:middle;}
+
+/* ── MODAL ──────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.75);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;backdrop-filter:blur(10px);
+}
+.modal-overlay.hidden{display:none;}
+.modal{
+  background:linear-gradient(145deg,rgba(19,19,37,0.99),rgba(13,13,26,0.99));
+  border:1px solid var(--border3);border-radius:22px;
+  padding:34px;max-width:520px;width:90%;
+  max-height:92vh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,0.7);
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+}
+.modal-title{font-family:var(--bebas);font-size:26px;letter-spacing:0.1em;margin-bottom:8px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:26px;line-height:1.7;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:20px;border-top:1px solid var(--border);}
+.modal-divider{border:none;border-top:1px solid var(--border);margin:20px 0;}
+.modal-section-title{font-family:var(--mono);font-size:10px;color:var(--yellow);letter-spacing:0.2em;margin-bottom:14px;text-transform:uppercase;}
+
+/* ── GITHUB PANEL ───────────────────────────── */
+.gh-panel{
+  border-radius:var(--radius);padding:26px;
   background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01));
   border:1px solid var(--border);
 }
-.github-status{
-  display:flex;align-items:center;gap:10px;padding:12px 16px;
-  border-radius:var(--radius-sm);background:var(--glass);border:1px solid var(--border);
+.gh-status{
+  display:flex;align-items:center;gap:10px;padding:12px 18px;
+  border-radius:var(--radius-sm);background:var(--glass2);border:1px solid var(--border);
   font-family:var(--mono);font-size:12px;margin-bottom:16px;
 }
 
-/* MODAL */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.7);
-  display:flex;align-items:center;justify-content:center;
-  z-index:1000;backdrop-filter:blur(8px);
-  animation:fadeIn 0.2s ease;
-}
-.modal-overlay.hidden{display:none;}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.modal{
-  background:linear-gradient(135deg,rgba(26,26,36,0.98),rgba(19,19,26,0.98));
-  border:1px solid var(--border2);border-radius:20px;
-  padding:32px;max-width:500px;width:90%;
-  animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  max-height:90vh;overflow-y:auto;
-}
-@keyframes modalIn{from{opacity:0;transform:scale(0.9) translateY(20px)}to{opacity:1;transform:none}}
-.modal-title{font-family:var(--bebas);font-size:24px;letter-spacing:0.1em;margin-bottom:8px;}
-.modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
-.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
-.modal-btn{padding:10px 22px;border-radius:var(--radius-sm);font-family:var(--jakarta);font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all 0.2s;}
-.modal-btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
-.modal-btn-ghost:hover{color:var(--white);border-color:var(--border2);}
-
-/* TOGGLE SWITCH */
-.toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
-.toggle-label{font-size:13px;font-weight:500;}
-.toggle-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.toggle-slider{
-  position:absolute;inset:0;border-radius:12px;cursor:pointer;
-  background:var(--glass2);border:1px solid var(--border);
-  transition:all 0.3s;
-}
-.toggle-slider::before{
-  content:'';position:absolute;
-  height:18px;width:18px;left:2px;bottom:2px;
-  border-radius:50%;background:var(--muted);
-  transition:all 0.3s;
-}
-input:checked+.toggle-slider{background:rgba(245,230,66,0.3);border-color:rgba(245,230,66,0.5);}
-input:checked+.toggle-slider::before{transform:translateX(20px);background:var(--yellow);}
-
-/* TOAST */
+/* ── TOAST ──────────────────────────────────── */
 #toast{
-  position:fixed;bottom:24px;right:24px;
-  background:rgba(26,26,36,0.95);border:1px solid var(--border2);
-  font-family:var(--mono);font-size:11px;color:var(--white);
-  padding:12px 18px;border-radius:10px;backdrop-filter:blur(12px);
-  opacity:0;transform:translateY(8px);transition:all 0.25s;
-  z-index:9999;max-width:300px;line-height:1.5;
+  position:fixed;bottom:28px;right:28px;
+  background:rgba(19,19,37,0.97);border:1px solid var(--border3);
+  font-family:var(--mono);font-size:12px;color:var(--white);
+  padding:13px 20px;border-radius:12px;backdrop-filter:blur(16px);
+  opacity:0;transform:translateY(10px) scale(0.97);
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index:9999;max-width:320px;line-height:1.5;
+  box-shadow:var(--shadow-lg);
 }
 #toast.show{opacity:1;transform:none;}
 
-/* PROGRESS BAR */
-.progress-wrap{margin:12px 0;}
-.progress-bar-bg{height:4px;background:var(--glass2);border-radius:2px;overflow:hidden;}
-.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--yellow),var(--yellow2));border-radius:2px;transition:width 0.5s ease;width:0;}
-
-/* RESPONSIVE */
-@media(max-width:768px){
+/* ── RESPONSIVE ─────────────────────────────── */
+@media(max-width:900px){
+  .grid-4{grid-template-columns:1fr 1fr;}
+  .agent-layout{grid-template-columns:1fr !important;}
+}
+@media(max-width:640px){
   .topbar{padding:0 16px;}
   .content{padding:16px;}
   .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
   .strategy-cols{grid-template-columns:1fr;}
   .modal{padding:24px;margin:16px;}
-  .section-title{font-size:22px;}
-}
-@media(max-width:480px){
+  .section-title{font-size:26px;}
   .brand-sub{display:none;}
   .topbar-right .chip:not(:last-child){display:none;}
 }
 
-/* WATERCOLOR EFFECT on launch btn */
-.launch-btn{
-  width:100%;padding:18px;border-radius:var(--radius);
-  background:linear-gradient(135deg,#f5e642 0%,#ffc107 50%,#f5e642 100%);
-  background-size:200% 200%;
-  color:#0d0d12;border:none;cursor:pointer;
-  font-family:var(--bebas);font-size:26px;letter-spacing:0.2em;
-  position:relative;overflow:hidden;
-  transition:all 0.3s;
-  animation:shimmer 3s ease-in-out infinite;
-}
-@keyframes shimmer{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-.launch-btn::before{
-  content:'';position:absolute;inset:-2px;
-  background:linear-gradient(135deg,rgba(245,230,66,0.5),rgba(255,193,7,0.3),rgba(245,230,66,0.5));
-  border-radius:inherit;z-index:-1;filter:blur(8px);
-  animation:shimmer 3s ease-in-out infinite;
-}
-.launch-btn::after{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 30% 30%,rgba(255,255,255,0.3) 0%,transparent 60%);
-  border-radius:inherit;pointer-events:none;
-}
-.launch-btn:hover{transform:translateY(-3px);box-shadow:0 16px 50px rgba(245,230,66,0.4);}
-.launch-btn:active{transform:translateY(0);}
-.launch-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;animation:none;}
-
-/* Watercolor blobs */
-.blob{
-  position:absolute;border-radius:50%;filter:blur(60px);
-  pointer-events:none;opacity:0.06;animation:blobMove 8s ease-in-out infinite;
-}
-@keyframes blobMove{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(20px,-15px) scale(1.1)}66%{transform:translate(-15px,10px) scale(0.9)}}
 </style>
 </head>
 <body>
 
-<div class="bg-mesh"></div>
+<div id="particles"></div>
+<div class="bg-canvas">
+  <div class="bg-orb bg-orb-1" id="orb1"></div>
+  <div class="bg-orb bg-orb-2" id="orb2"></div>
+  <div class="bg-orb bg-orb-3" id="orb3"></div>
+</div>
 <div class="grain"></div>
-<div class="blob" style="width:400px;height:400px;background:#f5e642;top:-100px;right:-100px;animation-delay:0s"></div>
-<div class="blob" style="width:300px;height:300px;background:#4fc3f7;bottom:-80px;left:-80px;animation-delay:3s"></div>
 
-<!-- MODAL: API Config -->
-<div class="modal-overlay" id="configModal">
+<!-- MODAL: Config -->
+<div class="modal-overlay hidden" id="configModal">
   <div class="modal">
-    <div class="modal-title">⚡ CONFIGURACIÓN INICIAL</div>
-    <div class="modal-sub">Configura tus claves API para activar el agente. Tus datos se guardan solo en tu navegador.</div>
+    <div class="modal-title">⚡ CONFIGURACIÓN</div>
+    <div class="modal-sub">Conecta tus cuentas y activa el agente IA. Los datos se guardan en tu navegador.</div>
 
+    <div class="modal-section-title">META / FACEBOOK</div>
     <div class="inp-group">
       <label class="inp-label">🔑 META ACCESS TOKEN</label>
       <input class="glass-input" id="cfgToken" type="password" placeholder="EAAK0FOvn..." />
@@ -520,43 +579,60 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
       <label class="inp-label">🏢 META ACCOUNT ID</label>
       <input class="glass-input" id="cfgAccount" type="text" placeholder="act_XXXXXXXXX" />
     </div>
+
+    <hr class="modal-divider">
+    <div class="modal-section-title">🤖 AGENTES IA</div>
     <div class="inp-group">
-      <label class="inp-label">🤖 OPENROUTER API KEY (para IA gratis)</label>
-      <input class="glass-input" id="cfgOpenRouter" type="password" placeholder="sk-or-v1-..." />
-      <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px;">
-        Obtén gratis en openrouter.ai → Se usa el modelo gratuito Mistral/Llama
-      </div>
+      <label class="inp-label">PROVEEDOR ACTIVO</label>
+      <select class="glass-select" id="cfgAiProvider" onchange="updateModelOptions()">
+        <option value="openrouter">OpenRouter (modelos gratuitos)</option>
+        <option value="openai">OpenAI — GPT-4o / GPT-4o-mini</option>
+        <option value="anthropic">Anthropic — Claude 3.5 Haiku / Sonnet</option>
+        <option value="gemini">Google Gemini 1.5 Flash / Pro</option>
+      </select>
     </div>
     <div class="inp-group">
-      <label class="inp-label">🐙 GITHUB TOKEN (para sync automático)</label>
+      <label class="inp-label">MODELO</label>
+      <select class="glass-select" id="cfgAiModel"></select>
+    </div>
+    <div class="inp-group">
+      <label class="inp-label">🔑 API KEY IA (cliente — para OpenRouter)</label>
+      <input class="glass-input" id="cfgOpenRouter" type="password" placeholder="sk-or-v1-..." />
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:5px;">Para OpenAI / Anthropic / Gemini: configura las claves en variables de entorno de Vercel</div>
+    </div>
+
+    <hr class="modal-divider">
+    <div class="modal-section-title">🐙 GITHUB SYNC</div>
+    <div class="inp-group">
+      <label class="inp-label">GITHUB TOKEN</label>
       <input class="glass-input" id="cfgGithub" type="password" placeholder="ghp_..." />
     </div>
     <div class="inp-group">
-      <label class="inp-label">📁 REPOSITORIO GITHUB</label>
+      <label class="inp-label">REPOSITORIO</label>
       <input class="glass-input" id="cfgRepo" type="text" placeholder="usuario/repo" />
     </div>
 
     <div class="toggle-wrap">
-      <div><div class="toggle-label">Recordar claves</div><div class="toggle-sub">Guardar en localStorage del navegador</div></div>
+      <div><div class="toggle-label">Recordar configuración</div><div class="toggle-sub">Guardar en localStorage del navegador</div></div>
       <label class="toggle"><input type="checkbox" id="cfgSave" checked /><span class="toggle-slider"></span></label>
     </div>
 
     <div class="modal-footer">
-      <button class="modal-btn modal-btn-ghost" onclick="closeModal('configModal')">Después</button>
-      <button class="modal-btn glass-btn glass-btn-yellow" style="padding:10px 22px" onclick="saveConfig()">Guardar & Conectar</button>
+      <button class="btn btn-ghost btn-md" onclick="closeModal('configModal')">Después</button>
+      <button class="btn btn-yellow btn-md" onclick="saveConfig()">✓ Guardar &amp; Conectar</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: Analysis preview -->
 <div class="modal-overlay hidden" id="analysisModal">
-  <div class="modal" style="max-width:640px">
+  <div class="modal" style="max-width:660px">
     <div class="modal-title" style="color:var(--info)">🔍 ANÁLISIS PRE-CAMPAÑA</div>
-    <div class="modal-sub">La IA analizó tu mercado antes de crear las campañas</div>
-    <div id="analysisModalContent" style="font-size:13px;color:var(--muted);line-height:1.8;white-space:pre-wrap;background:rgba(0,0,0,0.2);padding:16px;border-radius:10px;max-height:50vh;overflow-y:auto;font-family:var(--mono)"></div>
+    <div class="modal-sub">La IA analizó tu mercado y estrategia antes de crear las campañas</div>
+    <div id="analysisModalContent" style="font-size:12px;color:var(--muted);line-height:1.9;white-space:pre-wrap;background:rgba(0,0,0,0.25);padding:18px;border-radius:12px;max-height:52vh;overflow-y:auto;font-family:var(--mono);border:1px solid var(--border)"></div>
     <div class="modal-footer">
-      <button class="modal-btn modal-btn-ghost" onclick="closeModal('analysisModal')">Cancelar campaña</button>
-      <button class="modal-btn glass-btn glass-btn-yellow" style="padding:10px 22px" onclick="confirmLaunch()">✓ Crear campañas en Meta</button>
+      <button class="btn btn-ghost btn-md" onclick="closeModal('analysisModal')">Cancelar</button>
+      <button class="btn btn-yellow btn-md" onclick="confirmLaunch()">⚡ Crear campañas en Meta</button>
     </div>
   </div>
 </div>
@@ -564,9 +640,9 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
 <div class="wrapper">
 
   <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-hex">F</div>
+  <header class="topbar" id="topbar">
+    <div class="brand" id="brand">
+      <div class="brand-hex" id="brandHex">F</div>
       <div>
         <div class="brand-name">FABRICK ADS</div>
         <div class="brand-sub">AGENTE AUTÓNOMO IA</div>
@@ -575,12 +651,12 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
     <div class="topbar-right">
       <div class="chip" id="metaChip"><div class="dot" id="metaDot"></div><span id="metaLabel">Meta</span></div>
       <div class="chip" id="aiChip"><div class="dot" id="aiDot"></div><span id="aiLabel">IA</span></div>
-      <button class="glass-btn" style="padding:7px 14px;font-size:12px" onclick="showModal('configModal')">⚙️ Config</button>
+      <button class="btn btn-ghost btn-sm" onclick="showModal('configModal')">⚙️ Config</button>
     </div>
   </header>
 
-  <!-- TABS -->
-  <nav class="tabs-nav">
+  <!-- TABS NAV -->
+  <nav class="tabs-nav" id="tabsNav">
     <button class="tab-btn active" onclick="switchTab('dashboard',this)">📊 Dashboard</button>
     <button class="tab-btn" onclick="switchTab('agent',this)">⚡ Agente</button>
     <button class="tab-btn" onclick="switchTab('campaigns',this)">📢 Campañas</button>
@@ -589,47 +665,58 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
     <button class="tab-btn" onclick="switchTab('metrics',this)">📈 Métricas</button>
   </nav>
 
-  <!-- ══════════════════════ TAB: DASHBOARD ══════════════════════ -->
+  <!-- ══ TAB: DASHBOARD ══ -->
   <div class="content active" id="tab-dashboard">
     <div class="section-hdr">
-      <div><div class="section-label">RESUMEN GENERAL</div><div class="section-title">Dashboard</div></div>
-      <button class="glass-btn" style="padding:9px 18px;font-size:12px;font-weight:600" onclick="loadDashboard()">↻ Actualizar</button>
+      <div>
+        <span class="section-label">RESUMEN GENERAL</span>
+        <div class="section-title">Dashboard</div>
+      </div>
+      <button class="btn btn-ghost btn-md" onclick="loadDashboard()">↻ Actualizar</button>
     </div>
-    <div class="grid-4" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-n" id="dStatCamps">0</div><div class="stat-l">CAMPAÑAS CREADAS</div><div class="stat-delta" id="dStatCampsDelta"></div></div>
-      <div class="stat-card"><div class="stat-n" id="dStatSpend">$0</div><div class="stat-l">GASTO TOTAL (14D)</div></div>
-      <div class="stat-card"><div class="stat-n" id="dStatReach">—</div><div class="stat-l">ALCANCE</div></div>
-      <div class="stat-card"><div class="stat-n" id="dStatConv">—</div><div class="stat-l">CONVERSIONES</div></div>
+    <div class="grid-4" style="margin-bottom:24px" id="statsRow">
+      <div class="stat-card"><span class="stat-icon">📢</span><div class="stat-n" id="dStatCamps">0</div><div class="stat-l">CAMPAÑAS ACTIVAS</div><div class="stat-delta" id="dStatCampsDelta"></div></div>
+      <div class="stat-card"><span class="stat-icon">💰</span><div class="stat-n" id="dStatSpend">$0</div><div class="stat-l">GASTO TOTAL (14D)</div></div>
+      <div class="stat-card"><span class="stat-icon">👥</span><div class="stat-n" id="dStatReach">—</div><div class="stat-l">ALCANCE</div></div>
+      <div class="stat-card"><span class="stat-icon">🎯</span><div class="stat-n" id="dStatConv">—</div><div class="stat-l">CONVERSIONES</div></div>
     </div>
     <!-- Chart -->
-    <div class="glass-panel" style="padding:20px;margin-bottom:20px">
-      <div class="section-label" style="margin-bottom:14px">GASTO DIARIO — ÚLTIMOS 14 DÍAS</div>
-      <div id="chartWrap" style="height:140px;display:flex;align-items:flex-end;gap:5px;padding:8px 0">
-        <div style="width:100%;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;align-self:center">Conecta tu cuenta Meta para ver datos</div>
+    <div class="glass-card" style="padding:24px;margin-bottom:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <span class="section-label" style="margin-bottom:0">GASTO DIARIO — ÚLTIMOS 14 DÍAS</span>
+        <span id="chartTotal" style="font-family:var(--mono);font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div class="chart-wrap" id="chartWrap">
+        <div style="width:100%;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px;align-self:center">Conecta tu cuenta Meta para ver datos reales</div>
       </div>
     </div>
-    <!-- Recent campaigns -->
-    <div class="glass-panel" style="padding:20px">
-      <div class="section-label" style="margin-bottom:14px">CAMPAÑAS RECIENTES</div>
-      <div id="dashCamps" style="color:var(--muted);font-family:var(--mono);font-size:12px">Sin datos</div>
+    <!-- Recent campaigns with images -->
+    <div class="glass-card" style="padding:24px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <span class="section-label" style="margin-bottom:0">CAMPAÑAS RECIENTES</span>
+        <button class="btn btn-ghost btn-sm" onclick="switchTab('campaigns',document.querySelectorAll('.tab-btn')[2])">Ver todas →</button>
+      </div>
+      <div id="dashCamps">
+        <div style="color:var(--muted);font-family:var(--mono);font-size:12px;padding:20px 0">Sin datos — conecta tu cuenta Meta</div>
+      </div>
     </div>
   </div>
 
-  <!-- ══════════════════════ TAB: AGENT ══════════════════════ -->
+  <!-- ══ TAB: AGENT ══ -->
   <div class="content" id="tab-agent">
-    <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start">
+    <div class="agent-layout" style="display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start">
 
-      <!-- CONFIG PANEL -->
-      <div style="display:flex;flex-direction:column;gap:16px">
-        <div class="glass-panel" style="padding:22px">
-          <div class="section-label" style="margin-bottom:14px">🎯 LÍNEA DE PRODUCTO</div>
-          <div class="inp-group">
+      <!-- Left panel -->
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="glass-card" style="padding:24px">
+          <span class="section-label">🎯 LÍNEA DE PRODUCTO</span>
+          <div class="inp-group" style="margin-top:14px">
             <label class="inp-label">CATEGORÍA</label>
             <select class="glass-select" id="category">
-              <option value="banos">Baños & Duchas Premium</option>
+              <option value="banos">Baños &amp; Duchas Premium</option>
               <option value="revestimientos">Revestimientos PVC Mármol</option>
-              <option value="materiales">Materiales & Herramientas Pro</option>
-              <option value="smart">Smart Home & LED</option>
+              <option value="materiales">Materiales &amp; Herramientas Pro</option>
+              <option value="smart">Smart Home &amp; LED</option>
               <option value="full">Full Fabrick Home Luxury</option>
             </select>
           </div>
@@ -643,9 +730,9 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
           </div>
         </div>
 
-        <div class="glass-panel" style="padding:22px">
-          <div class="section-label" style="margin-bottom:12px">🌍 MERCADOS</div>
-          <div class="pill-row" id="countryPills">
+        <div class="glass-card" style="padding:24px">
+          <span class="section-label">🌍 MERCADOS</span>
+          <div class="pill-row" id="countryPills" style="margin-top:14px">
             <button class="pill on" onclick="togglePill(this,'CL')">🇨🇱 Chile</button>
             <button class="pill" onclick="togglePill(this,'CO')">🇨🇴 Colombia</button>
             <button class="pill" onclick="togglePill(this,'MX')">🇲🇽 México</button>
@@ -655,9 +742,9 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
           </div>
         </div>
 
-        <div class="glass-panel" style="padding:22px">
-          <div class="section-label" style="margin-bottom:12px">💰 PRESUPUESTO</div>
-          <div class="grid-2">
+        <div class="glass-card" style="padding:24px">
+          <span class="section-label">💰 PRESUPUESTO</span>
+          <div class="grid-2" style="margin-top:14px">
             <div class="inp-group">
               <label class="inp-label">DIARIO (centavos)</label>
               <input class="glass-input" id="budget" type="number" value="2000" />
@@ -672,34 +759,42 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
           </div>
         </div>
 
-        <div class="glass-panel" style="padding:22px">
-          <div class="section-label" style="margin-bottom:10px">✍️ INSTRUCCIÓN EXTRA</div>
-          <textarea class="glass-textarea" id="extraPrompt" placeholder="ej: Enfócate en el Maule, tono aspiracional, menciona 8 años de experiencia..."></textarea>
+        <div class="glass-card" style="padding:24px">
+          <span class="section-label">🤖 AGENTE IA ACTIVO</span>
+          <div id="activeAiBadge" style="margin:14px 0 16px">
+            <span class="ai-provider-badge">OpenRouter — Mistral 7B</span>
+          </div>
+          <div class="inp-group">
+            <label class="inp-label">✍️ INSTRUCCIÓN EXTRA</label>
+            <textarea class="glass-textarea" id="extraPrompt" placeholder="ej: Enfócate en el Maule, tono aspiracional, menciona 8 años de experiencia..."></textarea>
+          </div>
         </div>
 
-        <div class="toggle-wrap glass-panel" style="padding:16px 22px">
-          <div><div class="toggle-label" style="font-size:13px">Análisis previo con IA</div><div class="toggle-sub">Revisar estrategia antes de publicar</div></div>
-          <label class="toggle"><input type="checkbox" id="doAnalysis" checked /><span class="toggle-slider"></span></label>
+        <div class="glass-card" style="padding:18px 24px">
+          <div class="toggle-wrap" style="padding:0">
+            <div><div class="toggle-label">Análisis previo con IA</div><div class="toggle-sub">Revisar estrategia antes de publicar</div></div>
+            <label class="toggle"><input type="checkbox" id="doAnalysis" checked /><span class="toggle-slider"></span></label>
+          </div>
         </div>
 
-        <button class="launch-btn" id="launchBtn" onclick="startAgent()">⚡ LANZAR AGENTE</button>
+        <button class="btn-launch" id="launchBtn" onclick="startAgent()">⚡ LANZAR AGENTE</button>
       </div>
 
-      <!-- LOG + RESULTS -->
-      <div style="display:flex;flex-direction:column;gap:16px">
+      <!-- Right panel: log + results -->
+      <div style="display:flex;flex-direction:column;gap:18px">
         <!-- Progress -->
-        <div class="glass-panel" style="padding:18px" id="progressPanel" style="display:none">
-          <div class="section-label" style="margin-bottom:8px">PROGRESO</div>
+        <div class="glass-card" style="padding:20px" id="progressPanel">
+          <span class="section-label">PROGRESO</span>
           <div class="progress-wrap">
             <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressFill"></div></div>
           </div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px" id="progressLabel"></div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:8px" id="progressLabel">En espera</div>
         </div>
 
         <!-- Strategy -->
         <div class="strategy-box" id="strategyBox">
-          <div style="font-family:var(--bebas);font-size:18px;letter-spacing:0.1em;margin-bottom:14px;color:var(--yellow)">ESTRATEGIA IA GENERADA</div>
-          <div class="strategy-cols" id="strategyGrid"></div>
+          <div style="font-family:var(--bebas);font-size:20px;letter-spacing:0.1em;margin-bottom:16px;color:var(--yellow)">ESTRATEGIA GENERADA POR IA</div>
+          <div id="strategyGrid"></div>
         </div>
 
         <!-- Log -->
@@ -719,50 +814,57 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
           </div>
         </div>
 
-        <!-- Campaign cards -->
+        <!-- Campaign cards grid -->
         <div id="campsGrid" class="grid-auto"></div>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════ TAB: CAMPAIGNS ══════════════════════ -->
+  <!-- ══ TAB: CAMPAIGNS ══ -->
   <div class="content" id="tab-campaigns">
     <div class="section-hdr">
-      <div><div class="section-label">META ADS</div><div class="section-title">Campañas</div></div>
-      <button class="glass-btn glass-btn-yellow" style="padding:10px 20px;font-size:13px;font-weight:700" onclick="loadCampaigns()">↻ Cargar desde Meta</button>
+      <div>
+        <span class="section-label">META ADS</span>
+        <div class="section-title">Campañas</div>
+      </div>
+      <button class="btn btn-yellow btn-lg" onclick="loadCampaigns()">↻ Cargar desde Meta</button>
     </div>
-    <div class="glass-panel" style="padding:0;overflow:hidden">
+    <div class="glass-card" style="overflow:hidden;padding:0">
       <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <table class="data-table">
           <thead>
-            <tr style="border-bottom:1px solid var(--border)">
-              <th style="padding:14px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;font-weight:400">NOMBRE</th>
-              <th style="padding:14px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;font-weight:400">OBJETIVO</th>
-              <th style="padding:14px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;font-weight:400">ESTADO</th>
-              <th style="padding:14px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;font-weight:400">PRESUPUESTO</th>
-              <th style="padding:14px 18px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;font-weight:400">ACCIONES</th>
+            <tr>
+              <th>CAMPAÑA</th>
+              <th>OBJETIVO</th>
+              <th>ESTADO</th>
+              <th>PRESUPUESTO / DÍA</th>
+              <th>GASTO</th>
+              <th>ALCANCE</th>
+              <th>CTR</th>
+              <th>ACCIONES</th>
             </tr>
           </thead>
           <tbody id="campTable">
-            <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px">Conecta tu cuenta Meta y carga las campañas</td></tr>
+            <tr><td colspan="8" style="padding:48px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px">Conecta tu cuenta Meta y carga las campañas</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════ TAB: SKILLS ══════════════════════ -->
+  <!-- ══ TAB: SKILLS ══ -->
   <div class="content" id="tab-skills">
     <div class="section-hdr">
-      <div><div class="section-label">AGENTE IA</div><div class="section-title">Skills & Prompts</div></div>
-      <button class="glass-btn glass-btn-yellow" style="padding:10px 20px;font-size:13px;font-weight:700" onclick="saveSkillToGithub()">🐙 Sync a GitHub</button>
+      <div>
+        <span class="section-label">AGENTE IA</span>
+        <div class="section-title">Skills &amp; Prompts</div>
+      </div>
+      <button class="btn btn-yellow btn-lg" onclick="saveSkillToGithub()">🐙 Sync a GitHub</button>
     </div>
-    <div class="grid-auto" id="skillsGrid">
-      <!-- Skills are rendered by JS -->
-    </div>
-    <div style="margin-top:20px">
-      <div class="section-label" style="margin-bottom:14px">➕ CREAR NUEVA SKILL</div>
-      <div class="glass-panel" style="padding:22px">
+    <div class="grid-auto" id="skillsGrid"></div>
+    <div style="margin-top:28px">
+      <span class="section-label">➕ NUEVA SKILL</span>
+      <div class="glass-card" style="padding:26px;margin-top:14px">
         <div class="grid-2">
           <div class="inp-group">
             <label class="inp-label">NOMBRE</label>
@@ -779,20 +881,23 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
             <textarea class="glass-textarea" id="skillPrompt" style="min-height:100px" placeholder="Escribe el prompt que usará el agente para esta skill..."></textarea>
           </div>
         </div>
-        <button class="glass-btn glass-btn-yellow" style="padding:11px 24px;font-size:13px;font-weight:700;margin-top:4px" onclick="addSkill()">+ Guardar Skill</button>
+        <button class="btn btn-yellow btn-md" onclick="addSkill()">+ Guardar Skill</button>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════ TAB: GITHUB ══════════════════════ -->
+  <!-- ══ TAB: GITHUB ══ -->
   <div class="content" id="tab-github">
     <div class="section-hdr">
-      <div><div class="section-label">SYNC AUTOMÁTICO</div><div class="section-title">GitHub</div></div>
+      <div>
+        <span class="section-label">SYNC AUTOMÁTICO</span>
+        <div class="section-title">GitHub</div>
+      </div>
     </div>
     <div class="grid-2">
-      <div class="github-panel">
-        <div class="section-label" style="margin-bottom:14px">ESTADO DE CONEXIÓN</div>
-        <div class="github-status" id="ghStatus">
+      <div class="gh-panel">
+        <span class="section-label" style="display:block;margin-bottom:16px">ESTADO DE CONEXIÓN</span>
+        <div class="gh-status" id="ghStatus">
           <div class="dot" id="ghDot"></div>
           <span id="ghStatusText" style="font-size:12px">Sin configurar</span>
         </div>
@@ -800,28 +905,31 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
           <label class="inp-label">REPOSITORIO</label>
           <input class="glass-input" id="ghRepoDisplay" placeholder="usuario/repo" readonly />
         </div>
-        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
-          <button class="glass-btn" style="padding:11px;font-size:13px;font-weight:600;width:100%" onclick="syncToGithub('skills')">📤 Push Skills a GitHub</button>
-          <button class="glass-btn" style="padding:11px;font-size:13px;font-weight:600;width:100%" onclick="syncToGithub('campaigns')">📤 Push Campañas a GitHub</button>
-          <button class="glass-btn" style="padding:11px;font-size:13px;font-weight:600;width:100%" onclick="syncToGithub('config')">📤 Push Config (sin tokens)</button>
-          <button class="glass-btn glass-btn-yellow" style="padding:11px;font-size:13px;font-weight:700;width:100%;color:#0d0d12" onclick="syncToGithub('all')">⚡ SYNC TODO AHORA</button>
+        <div style="margin-top:18px;display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-ghost btn-md btn-block" onclick="syncToGithub('skills')">📤 Push Skills a GitHub</button>
+          <button class="btn btn-ghost btn-md btn-block" onclick="syncToGithub('campaigns')">📤 Push Campañas a GitHub</button>
+          <button class="btn btn-ghost btn-md btn-block" onclick="syncToGithub('config')">📤 Push Config (sin tokens)</button>
+          <button class="btn btn-yellow btn-lg btn-block" onclick="syncToGithub('all')">⚡ SYNC TODO AHORA</button>
         </div>
       </div>
-      <div class="github-panel">
-        <div class="section-label" style="margin-bottom:14px">LOG DE SINCRONIZACIÓN</div>
-        <div class="log-body" id="ghLog" style="height:350px;background:rgba(0,0,0,0.2);border-radius:10px;padding:14px">
+      <div class="gh-panel">
+        <span class="section-label" style="display:block;margin-bottom:16px">LOG DE SINCRONIZACIÓN</span>
+        <div class="log-body" id="ghLog" style="height:380px;background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;border:1px solid var(--border)">
           <div class="log-entry"><span class="log-ico">🐙</span><span class="log-txt">GitHub sync listo. Configura tu token y repositorio.</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════ TAB: MÉTRICAS ══════════════════════ -->
+  <!-- ══ TAB: MÉTRICAS ══ -->
   <div class="content" id="tab-metrics">
     <div class="section-hdr">
-      <div><div class="section-label">ANÁLISIS</div><div class="section-title">Métricas</div></div>
+      <div>
+        <span class="section-label">ANÁLISIS</span>
+        <div class="section-title">Métricas</div>
+      </div>
     </div>
-    <div class="glass-panel" style="padding:22px;margin-bottom:20px">
+    <div class="glass-card" style="padding:24px;margin-bottom:24px">
       <div class="grid-4">
         <div class="inp-group">
           <label class="inp-label">DESDE</label>
@@ -840,7 +948,7 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
           </select>
         </div>
         <div class="inp-group" style="align-self:flex-end">
-          <button class="glass-btn glass-btn-yellow" style="padding:11px;font-size:13px;font-weight:700;width:100%;color:#0d0d12" onclick="loadMetrics()">📊 Analizar</button>
+          <button class="btn btn-yellow btn-md btn-block" onclick="loadMetrics()">📊 Analizar</button>
         </div>
       </div>
     </div>
@@ -852,11 +960,11 @@ input:checked+.toggle-slider::before{transform:translateX(20px);background:var(-
 <div id="toast"></div>
 
 <script>
+
 // ════════════════════════════════════
 // CONFIG & STATE
 // ════════════════════════════════════
 const META_API = 'https://graph.facebook.com/v19.0';
-const OPENROUTER = 'https://openrouter.ai/api/v1/chat/completions';
 const GITHUB_API = 'https://api.github.com';
 
 let CFG = {
@@ -865,6 +973,8 @@ let CFG = {
   openRouterKey: '',
   githubToken: '',
   githubRepo: '',
+  aiProvider: 'openrouter',
+  aiModel: '',
 };
 
 let STATE = {
@@ -876,7 +986,120 @@ let STATE = {
   countries: ['CL'],
 };
 
-// Load from localStorage
+const AI_MODELS = {
+  openrouter: ['mistralai/mistral-7b-instruct:free','meta-llama/llama-3.1-8b-instruct:free','google/gemma-2-9b-it:free'],
+  openai: ['gpt-4o-mini','gpt-4o','gpt-4-turbo'],
+  anthropic: ['claude-3-5-haiku-20241022','claude-3-5-sonnet-20241022','claude-3-opus-20240229'],
+  gemini: ['gemini-1.5-flash','gemini-1.5-pro','gemini-2.0-flash-exp'],
+};
+
+const PROVIDER_LABELS = {
+  openrouter: 'OpenRouter',
+  openai: 'OpenAI',
+  anthropic: 'Anthropic',
+  gemini: 'Google Gemini',
+};
+
+// Category images from Unsplash (stable photo IDs)
+const CAT_IMAGES = {
+  banos:           'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&h=180&fit=crop&q=80',
+  revestimientos:  'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&h=180&fit=crop&q=80',
+  materiales:      'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400&h=180&fit=crop&q=80',
+  smart:           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=180&fit=crop&q=80',
+  full:            'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=180&fit=crop&q=80',
+};
+const OBJ_IMAGES = {
+  OUTCOME_SALES:   'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=180&fit=crop&q=80',
+  OUTCOME_LEADS:   'https://images.unsplash.com/photo-1560472355-536de3962603?w=400&h=180&fit=crop&q=80',
+  OUTCOME_TRAFFIC: 'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=400&h=180&fit=crop&q=80',
+  OUTCOME_ENGAGEMENT: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=180&fit=crop&q=80',
+};
+
+// ════════════════════════════════════
+// GSAP SETUP
+// ════════════════════════════════════
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+function initGSAP() {
+  // Page load entrance
+  const tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
+  tl.from('#topbar',    { y: -70, opacity: 0, duration: 0.9 })
+    .from('#tabsNav',   { y: -40, opacity: 0, duration: 0.7 }, '-=0.5')
+    .from('#tab-dashboard .stat-card', { y: 40, opacity: 0, duration: 0.7, stagger: 0.1 }, '-=0.4')
+    .from('#tab-dashboard .glass-card', { y: 30, opacity: 0, duration: 0.7, stagger: 0.12 }, '-=0.4');
+
+  // Animate background orbs
+  gsap.to('#orb1', { x: 40, y: -30, duration: 8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+  gsap.to('#orb2', { x: -30, y: 40, duration: 10, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 2 });
+  gsap.to('#orb3', { x: 50, y: 20, duration: 12, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 4 });
+
+  // Brand hex pulse
+  gsap.to('#brandHex', { filter: 'drop-shadow(0 0 16px rgba(245,230,66,0.8))', duration: 1.5, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+
+  // Create floating particles
+  createParticles();
+
+  // Thinking dots animation
+  gsap.to('.t-dot', {
+    y: -6, duration: 0.4, stagger: 0.15, repeat: -1, yoyo: true, ease: 'power2.inOut'
+  });
+}
+
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 35; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 2.5 + 0.8;
+    p.style.cssText = `width:${size}px;height:${size}px;background:rgba(245,230,66,${Math.random()*0.35+0.05});left:${Math.random()*100}%;top:${Math.random()*100}%;`;
+    container.appendChild(p);
+    gsap.to(p, {
+      x: (Math.random()-0.5)*120, y: (Math.random()-0.5)*120,
+      duration: Math.random()*12+8, repeat:-1, yoyo:true, ease:'sine.inOut',
+      delay: Math.random()*6
+    });
+    gsap.to(p, {
+      opacity: Math.random()*0.7+0.1,
+      duration: Math.random()*4+2, repeat:-1, yoyo:true, ease:'sine.inOut',
+      delay: Math.random()*3
+    });
+  }
+}
+
+function animateTabIn(tabEl) {
+  const children = tabEl.querySelectorAll('.stat-card, .glass-card, .camp-card, .skill-card, .log-wrap, .strategy-box.show, .section-hdr, .gh-panel');
+  if (children.length === 0) return;
+  gsap.fromTo(children,
+    { y: 28, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, stagger: 0.08, ease: 'power3.out', clearProps: 'transform,opacity' }
+  );
+}
+
+function animateCounter(elId, target, prefix = '', suffix = '') {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const obj = { val: 0 };
+  gsap.to(obj, {
+    val: target, duration: 1.4, ease: 'power2.out',
+    onUpdate: () => { el.textContent = prefix + Math.round(obj.val).toLocaleString('es-CL') + suffix; }
+  });
+}
+
+function addCardTilt(el) {
+  el.addEventListener('mousemove', (e) => {
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    gsap.to(el, { rotateY: x * 7, rotateX: -y * 7, duration: 0.3, ease: 'power2.out', transformPerspective: 800 });
+  });
+  el.addEventListener('mouseleave', () => {
+    gsap.to(el, { rotateY: 0, rotateX: 0, duration: 0.5, ease: 'back.out(1.4)' });
+  });
+}
+
+// ════════════════════════════════════
+// CONFIG & INIT
+// ════════════════════════════════════
 function loadConfig() {
   try {
     const saved = localStorage.getItem('fabrick_cfg');
@@ -887,12 +1110,32 @@ function loadConfig() {
 }
 
 function applyConfig() {
-  if (CFG.metaToken) { document.getElementById('cfgToken').value = CFG.metaToken; }
-  if (CFG.metaAccount) { document.getElementById('cfgAccount').value = CFG.metaAccount; document.getElementById('ghRepoDisplay').value = CFG.githubRepo || ''; }
+  if (CFG.metaToken) document.getElementById('cfgToken').value = CFG.metaToken;
+  if (CFG.metaAccount) document.getElementById('cfgAccount').value = CFG.metaAccount;
   if (CFG.openRouterKey) document.getElementById('cfgOpenRouter').value = CFG.openRouterKey;
   if (CFG.githubToken) document.getElementById('cfgGithub').value = CFG.githubToken;
-  if (CFG.githubRepo) { document.getElementById('cfgRepo').value = CFG.githubRepo; document.getElementById('ghRepoDisplay').value = CFG.githubRepo; }
+  if (CFG.githubRepo) {
+    document.getElementById('cfgRepo').value = CFG.githubRepo;
+    document.getElementById('ghRepoDisplay').value = CFG.githubRepo;
+  }
+  if (CFG.aiProvider) document.getElementById('cfgAiProvider').value = CFG.aiProvider;
+  updateModelOptions();
+  if (CFG.aiModel) document.getElementById('cfgAiModel').value = CFG.aiModel;
+  updateAIBadge();
   checkConnections();
+}
+
+function updateModelOptions() {
+  const provider = document.getElementById('cfgAiProvider').value;
+  const modelSel = document.getElementById('cfgAiModel');
+  modelSel.innerHTML = AI_MODELS[provider].map(m => `<option value="${m}">${m}</option>`).join('');
+}
+
+function updateAIBadge() {
+  const p = CFG.aiProvider || 'openrouter';
+  const m = CFG.aiModel || AI_MODELS[p][0];
+  const badge = document.getElementById('activeAiBadge');
+  if (badge) badge.innerHTML = `<span class="ai-provider-badge">🤖 ${PROVIDER_LABELS[p] || p} — ${m}</span>`;
 }
 
 async function saveConfig() {
@@ -901,39 +1144,40 @@ async function saveConfig() {
   CFG.openRouterKey = document.getElementById('cfgOpenRouter').value.trim();
   CFG.githubToken = document.getElementById('cfgGithub').value.trim();
   CFG.githubRepo = document.getElementById('cfgRepo').value.trim();
+  CFG.aiProvider = document.getElementById('cfgAiProvider').value;
+  CFG.aiModel = document.getElementById('cfgAiModel').value;
   if (document.getElementById('cfgSave').checked) {
     localStorage.setItem('fabrick_cfg', JSON.stringify(CFG));
   }
   document.getElementById('ghRepoDisplay').value = CFG.githubRepo;
   closeModal('configModal');
+  updateAIBadge();
   toast('⚡ Configuración guardada');
   await checkConnections();
 }
 
 async function checkConnections() {
-  // Meta
   if (CFG.metaToken && CFG.metaAccount) {
     try {
       const r = await fetch(`${META_API}/${CFG.metaAccount}?fields=name,currency&access_token=${CFG.metaToken}`);
       const d = await r.json();
       if (d.name) {
-        setChip('metaDot','metaLabel',true,d.name);
+        setChip('metaDot','metaLabel',true, d.name);
+        gsap.to('#metaChip', { borderColor: 'rgba(0,229,160,0.25)', duration: 0.5 });
         loadDashboard();
-        ghLog('🔗', `Meta conectado: ${d.name}`);
+        ghLog('🔗', `Meta conectado: ${d.name} (${d.currency || ''})`);
       } else { setChip('metaDot','metaLabel',false,'Meta Error'); }
     } catch(e) { setChip('metaDot','metaLabel',false,'Meta'); }
   }
-  // OpenRouter
-  if (CFG.openRouterKey) {
-    setChip('aiDot','aiLabel',true,'IA Lista');
-    ghLog('🤖', 'OpenRouter IA configurado');
+  if (CFG.openRouterKey || CFG.aiProvider !== 'openrouter') {
+    setChip('aiDot','aiLabel',true, PROVIDER_LABELS[CFG.aiProvider] || 'IA Lista');
+    ghLog('🤖', `IA configurada: ${PROVIDER_LABELS[CFG.aiProvider] || CFG.aiProvider}`);
   }
-  // GitHub
   if (CFG.githubToken && CFG.githubRepo) {
     const dot = document.getElementById('ghDot');
     const txt = document.getElementById('ghStatusText');
     dot.style.background = 'var(--success)';
-    dot.style.boxShadow = '0 0 8px var(--success)';
+    dot.style.boxShadow = '0 0 10px var(--success)';
     txt.textContent = `Conectado → ${CFG.githubRepo}`;
     ghLog('🐙', `GitHub conectado: ${CFG.githubRepo}`);
   }
@@ -943,28 +1187,42 @@ function setChip(dotId, labelId, ok, label) {
   const dot = document.getElementById(dotId);
   const lbl = document.getElementById(labelId);
   dot.style.background = ok ? 'var(--success)' : 'var(--danger)';
-  dot.style.boxShadow = ok ? '0 0 8px var(--success)' : 'none';
+  dot.style.boxShadow = ok ? '0 0 10px var(--success)' : 'none';
   lbl.textContent = label;
 }
 
 // ════════════════════════════════════
-// TAB + MODAL
+// TABS + MODALS
 // ════════════════════════════════════
 function switchTab(id, el) {
   document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
+  const tab = document.getElementById('tab-' + id);
+  tab.classList.add('active');
   el.classList.add('active');
+  gsap.from(el, { scale: 0.9, duration: 0.25, ease: 'back.out(2)' });
+  animateTabIn(tab);
   if (id === 'skills') renderSkills();
 }
-function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function showModal(id) {
+  const overlay = document.getElementById(id);
+  overlay.classList.remove('hidden');
+  gsap.from(overlay.querySelector('.modal'), { scale: 0.88, opacity: 0, y: 24, duration: 0.45, ease: 'expo.out' });
+}
+function closeModal(id) {
+  const overlay = document.getElementById(id);
+  gsap.to(overlay.querySelector('.modal'), {
+    scale: 0.92, opacity: 0, y: 16, duration: 0.25, ease: 'power2.in',
+    onComplete: () => overlay.classList.add('hidden')
+  });
+}
 
 // ════════════════════════════════════
 // PILLS
 // ════════════════════════════════════
 function togglePill(el, country) {
   el.classList.toggle('on');
+  gsap.from(el, { scale: 0.88, duration: 0.3, ease: 'back.out(2)' });
   STATE.countries = el.classList.contains('on')
     ? [...STATE.countries, country]
     : STATE.countries.filter(c => c !== country);
@@ -977,33 +1235,66 @@ function log(ico, txt, type = '') {
   const body = document.getElementById('logBody');
   const e = document.createElement('div'); e.className = 'log-entry';
   e.innerHTML = `<span class="log-ico">${ico}</span><span class="log-txt ${type}">${txt}</span>`;
-  body.appendChild(e); body.scrollTop = body.scrollHeight;
+  body.appendChild(e);
+  gsap.from(e, { x: -10, opacity: 0, duration: 0.3, ease: 'power2.out' });
+  body.scrollTop = body.scrollHeight;
 }
 function ghLog(ico, txt) {
   const body = document.getElementById('ghLog');
   const e = document.createElement('div'); e.className = 'log-entry';
   e.innerHTML = `<span class="log-ico">${ico}</span><span class="log-txt">${txt}</span>`;
-  body.appendChild(e); body.scrollTop = body.scrollHeight;
+  body.appendChild(e);
+  gsap.from(e, { x: -8, opacity: 0, duration: 0.25, ease: 'power2.out' });
+  body.scrollTop = body.scrollHeight;
 }
 function setThinking(show, label = 'PROCESANDO...') {
   document.getElementById('thinkingBar').classList.toggle('hidden', !show);
   document.getElementById('thinkLabel').textContent = label;
 }
-function setBadge(txt) { document.getElementById('logBadge').textContent = txt; }
+function setBadge(txt, type = '') {
+  const el = document.getElementById('logBadge');
+  el.textContent = txt;
+  el.className = 'log-badge' + (type ? ' ' + type : '');
+}
 function setProgress(pct, label = '') {
-  document.getElementById('progressFill').style.width = pct + '%';
+  gsap.to('#progressFill', { width: pct + '%', duration: 0.5, ease: 'power2.out' });
   document.getElementById('progressLabel').textContent = label;
 }
 
 // ════════════════════════════════════
-// OPENROUTER AI
+// AI (server-side first, then client fallback)
 // ════════════════════════════════════
 async function askAI(prompt, systemPrompt = '') {
-  if (!CFG.openRouterKey) throw new Error('No hay OpenRouter Key configurada');
   const messages = [];
   if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
   messages.push({ role: 'user', content: prompt });
-  const res = await fetch(OPENROUTER, {
+
+  // Try server-side /api/ai endpoint first
+  try {
+    const res = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        provider: CFG.aiProvider || 'openrouter',
+        model: CFG.aiModel || null,
+        messages, max_tokens: 1800, temperature: 0.7,
+      })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.content) {
+        log('🤖', `Respuesta de ${data.provider} (${data.model})`, 'info');
+        return data.content;
+      }
+      if (data.error && !CFG.openRouterKey) throw new Error(data.error);
+    }
+  } catch (e) {
+    if (!CFG.openRouterKey) throw e;
+  }
+
+  // Client-side OpenRouter fallback
+  if (!CFG.openRouterKey) throw new Error('Configura una clave de IA en Configuración');
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -1011,12 +1302,7 @@ async function askAI(prompt, systemPrompt = '') {
       'HTTP-Referer': 'https://fabrick-ads.vercel.app',
       'X-Title': 'Fabrick ADS Agent',
     },
-    body: JSON.stringify({
-      model: 'mistralai/mistral-7b-instruct:free',
-      messages,
-      max_tokens: 1500,
-      temperature: 0.7,
-    })
+    body: JSON.stringify({ model: 'mistralai/mistral-7b-instruct:free', messages, max_tokens: 1800, temperature: 0.7 })
   });
   const data = await res.json();
   if (data.error) throw new Error(data.error.message);
@@ -1048,33 +1334,58 @@ async function metaGet(endpoint, params = {}) {
 async function loadDashboard() {
   if (!CFG.metaToken || !CFG.metaAccount) return;
   try {
-    const ins = await metaGet(`${CFG.metaAccount}/insights`, { fields: 'spend,reach,impressions,actions,date_start', date_preset: 'last_14_days', time_increment: 1 });
+    const ins = await metaGet(`${CFG.metaAccount}/insights`, {
+      fields: 'spend,reach,impressions,actions,date_start',
+      date_preset: 'last_14_days', time_increment: 1
+    });
     if (ins.data && ins.data.length) {
-      const total = ins.data.reduce((a, d) => ({ spend: a.spend + parseFloat(d.spend || 0), reach: a.reach + parseInt(d.reach || 0) }), { spend: 0, reach: 0 });
-      document.getElementById('dStatSpend').textContent = '$' + total.spend.toFixed(2);
-      document.getElementById('dStatReach').textContent = num(total.reach);
-      const convs = ins.data.flatMap(d => d.actions || []).filter(a => a.action_type === 'purchase').reduce((s, a) => s + parseInt(a.value || 0), 0);
-      document.getElementById('dStatConv').textContent = convs || '—';
-      // Chart
+      const total = ins.data.reduce((a, d) => ({
+        spend: a.spend + parseFloat(d.spend || 0),
+        reach: a.reach + parseInt(d.reach || 0)
+      }), { spend: 0, reach: 0 });
+      animateCounter('dStatSpend', total.spend, '$');
+      animateCounter('dStatReach', total.reach);
+      const convs = ins.data.flatMap(d => d.actions || [])
+        .filter(a => a.action_type === 'purchase')
+        .reduce((s, a) => s + parseInt(a.value || 0), 0);
+      if (convs > 0) animateCounter('dStatConv', convs);
+      else document.getElementById('dStatConv').textContent = '—';
+
+      // Build chart
       const wrap = document.getElementById('chartWrap');
       wrap.innerHTML = '';
       const max = Math.max(...ins.data.map(d => parseFloat(d.spend || 0)));
+      document.getElementById('chartTotal').textContent = `Total: $${total.spend.toFixed(2)}`;
       ins.data.forEach((d, i) => {
         const bar = document.createElement('div');
+        bar.className = 'chart-bar';
         const h = max > 0 ? Math.max((parseFloat(d.spend || 0) / max) * 100, 3) : 3;
-        bar.style.cssText = `flex:1;height:${h}%;border-radius:4px 4px 0 0;background:linear-gradient(to top,var(--yellow),var(--yellow2));opacity:0.7;cursor:pointer;transition:opacity 0.2s;animation:growBar 0.5s ${i*0.04}s ease both`;
+        bar.style.height = h + '%';
         bar.title = `${d.date_start}: $${parseFloat(d.spend||0).toFixed(2)}`;
-        bar.onmouseenter = () => bar.style.opacity = '1';
-        bar.onmouseleave = () => bar.style.opacity = '0.7';
         wrap.appendChild(bar);
+        gsap.from(bar, { scaleY: 0, duration: 0.6, delay: i * 0.04, ease: 'power2.out', transformOrigin: 'bottom' });
       });
     }
-    // Camps
-    const camps = await metaGet(`${CFG.metaAccount}/campaigns`, { fields: 'name,status,objective', limit: 5 });
+    // Recent campaigns
+    const camps = await metaGet(`${CFG.metaAccount}/campaigns`, {
+      fields: 'name,status,objective,daily_budget,created_time', limit: 6
+    });
     const el = document.getElementById('dashCamps');
     if (camps.data && camps.data.length) {
-      el.innerHTML = camps.data.map(c => `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-size:13px;font-weight:600">${c.name}</div><span style="font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:20px;${c.status==='ACTIVE'?'background:rgba(0,229,160,0.1);color:var(--success)':'background:rgba(245,230,66,0.1);color:var(--yellow)'}">${c.status}</span></div>`).join('');
-      document.getElementById('dStatCamps').textContent = camps.data.length;
+      animateCounter('dStatCamps', camps.data.filter(c => c.status === 'ACTIVE').length);
+      el.innerHTML = camps.data.map(c => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);gap:12px">
+          <div style="display:flex;align-items:center;gap:14px;min-width:0">
+            <div style="width:42px;height:42px;border-radius:10px;flex-shrink:0;overflow:hidden;background:#131325">
+              <img src="${OBJ_IMAGES[c.objective] || OBJ_IMAGES.OUTCOME_TRAFFIC}" style="width:100%;height:100%;object-fit:cover" loading="lazy" />
+            </div>
+            <div style="min-width:0">
+              <div style="font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px">${c.name}</div>
+              <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px">${c.objective || '—'} · ${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2)+'/día' : 'sin presupuesto'}</div>
+            </div>
+          </div>
+          <span style="font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:20px;flex-shrink:0;${statusStyle(c.status)}">${c.status}</span>
+        </div>`).join('');
     }
   } catch(e) { toast('Error dashboard: ' + e.message); }
 }
@@ -1084,29 +1395,51 @@ async function loadDashboard() {
 // ════════════════════════════════════
 async function loadCampaigns() {
   if (!CFG.metaToken || !CFG.metaAccount) { toast('⚠ Configura tu cuenta Meta'); return; }
+  const tbody = document.getElementById('campTable');
+  tbody.innerHTML = `<tr><td colspan="8" style="padding:40px;text-align:center;color:var(--info);font-family:var(--mono);font-size:12px">Cargando campañas...</td></tr>`;
   try {
-    const data = await metaGet(`${CFG.metaAccount}/campaigns`, { fields: 'name,objective,status,daily_budget,lifetime_budget', limit: 50 });
-    const tbody = document.getElementById('campTable');
-    if (!data.data || !data.data.length) { tbody.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px">No hay campañas</td></tr>'; return; }
-    tbody.innerHTML = data.data.map(c => `
-      <tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:14px 18px"><div style="font-weight:600;font-size:13px">${c.name}</div><div style="font-family:var(--mono);font-size:10px;color:var(--muted)">${c.id}</div></td>
-        <td style="padding:14px 18px"><span style="font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(245,230,66,0.08);color:var(--yellow)">${c.objective}</span></td>
-        <td style="padding:14px 18px"><span style="font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:20px;${statusStyle(c.status)}">${c.status}</span></td>
-        <td style="padding:14px 18px;font-family:var(--mono);font-size:12px;color:var(--muted)">${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2)+'/día' : '—'}</td>
-        <td style="padding:14px 18px">
+    const data = await metaGet(`${CFG.metaAccount}/campaigns`, {
+      fields: 'name,objective,status,daily_budget,lifetime_budget,spend_cap,created_time', limit: 50
+    });
+    if (!data.data || !data.data.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="padding:48px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px">No hay campañas en esta cuenta</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.data.map((c, i) => `
+      <tr style="animation-delay:${i*0.05}s">
+        <td>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#131325">
+              <img src="${OBJ_IMAGES[c.objective] || OBJ_IMAGES.OUTCOME_TRAFFIC}" style="width:100%;height:100%;object-fit:cover" loading="lazy" />
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:13px">${c.name}</div>
+              <div style="font-family:var(--mono);font-size:9px;color:var(--muted2)">${c.id}</div>
+            </div>
+          </div>
+        </td>
+        <td><span style="font-family:var(--mono);font-size:10px;padding:3px 9px;border-radius:4px;background:rgba(245,230,66,0.07);color:var(--yellow)">${c.objective || '—'}</span></td>
+        <td><span class="cc-status-badge ${c.status === 'ACTIVE' ? 'active' : c.status === 'PAUSED' ? 'paused' : 'err'}">${c.status}</span></td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${c.daily_budget ? '$'+(c.daily_budget/100).toFixed(2) : '—'}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">—</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">—</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">—</td>
+        <td>
           <div style="display:flex;gap:6px">
-            <button class="glass-btn" style="padding:5px 12px;font-size:11px" onclick="toggleCamp('${c.id}','${c.status}')">${c.status==='ACTIVE'?'⏸':'▶'}</button>
-            <button class="glass-btn glass-btn-red" style="padding:5px 12px;font-size:11px" onclick="deleteCamp('${c.id}','${c.name}')">🗑</button>
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="toggleCamp('${c.id}','${c.status}')" title="${c.status==='ACTIVE'?'Pausar':'Activar'}">${c.status==='ACTIVE'?'⏸':'▶'}</button>
+            <button class="btn btn-danger btn-icon btn-sm" onclick="deleteCamp('${c.id}','${c.name}')" title="Eliminar">🗑</button>
           </div>
         </td>
       </tr>`).join('');
+    // Animate rows in
+    gsap.from(tbody.querySelectorAll('tr'), { y: 14, opacity: 0, duration: 0.4, stagger: 0.05, ease: 'power2.out' });
   } catch(e) { toast('Error: ' + e.message); }
 }
+
 function statusStyle(s) {
-  if (s==='ACTIVE') return 'background:rgba(0,229,160,0.1);color:var(--success)';
-  if (s==='PAUSED') return 'background:rgba(245,230,66,0.1);color:var(--yellow)';
-  return 'background:rgba(255,68,85,0.1);color:var(--danger)';
+  if (s === 'ACTIVE') return 'background:rgba(0,229,160,0.1);color:var(--success);border:1px solid rgba(0,229,160,0.2)';
+  if (s === 'PAUSED') return 'background:rgba(245,230,66,0.1);color:var(--yellow);border:1px solid rgba(245,230,66,0.2)';
+  return 'background:rgba(255,68,85,0.1);color:var(--danger);border:1px solid rgba(255,68,85,0.2)';
 }
 async function toggleCamp(id, status) {
   const ns = status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
@@ -1123,9 +1456,12 @@ async function deleteCamp(id, name) {
 }
 
 // ════════════════════════════════════
-// AGENT LAUNCH
+// AGENT
 // ════════════════════════════════════
-const catNames = { banos:'Baños & Duchas Premium', revestimientos:'Revestimientos PVC Mármol', materiales:'Materiales & Herramientas Pro', smart:'Smart Home & Iluminación LED', full:'Full Fabrick Home Luxury' };
+const catNames = {
+  banos:'Baños & Duchas Premium', revestimientos:'Revestimientos PVC Mármol',
+  materiales:'Materiales & Herramientas Pro', smart:'Smart Home & Iluminación LED', full:'Full Fabrick Home Luxury'
+};
 const audNames = { b2c:'consumidores B2C', b2b:'profesionales B2B', both:'B2C y B2B dual' };
 
 async function startAgent() {
@@ -1135,7 +1471,7 @@ async function startAgent() {
   btn.disabled = true;
   document.getElementById('campsGrid').innerHTML = '';
   document.getElementById('strategyBox').classList.remove('show');
-  setBadge('EJECUTANDO');
+  setBadge('EJECUTANDO', 'running');
 
   const cat = document.getElementById('category').value;
   const aud = document.getElementById('audience').value;
@@ -1149,6 +1485,7 @@ async function startAgent() {
   log('🎯',`Audiencia: ${audNames[aud]}`);
   log('🌍',`Mercados: ${countries.join(', ')}`);
   log('💰',`Presupuesto: $${(budget/100).toFixed(2)} USD/día`);
+  log('🤖',`Proveedor IA: ${PROVIDER_LABELS[CFG.aiProvider] || CFG.aiProvider}`);
 
   setThinking(true,'GENERANDO ESTRATEGIA CON IA...');
   setProgress(10,'Consultando IA...');
@@ -1162,46 +1499,30 @@ PAÍSES: ${countries.join(', ')}
 PRESUPUESTO: $${(budget/100).toFixed(2)} USD/día
 EXTRA: ${extra || 'Ninguna instrucción adicional'}
 
-BRANDING: Negro profundo + Amarillo eléctrico. Tono aspiracional, premium. Nunca mencionar precio bajo o descuento.
+BRANDING: Negro profundo + Amarillo eléctrico. Tono aspiracional, premium. Nunca mencionar precio bajo.
 HOOK: "Seleccionado por 8 años construyendo el Maule. Ahora disponible para tu proyecto."
 
-Responde SOLO JSON válido sin markdown ni explicación:
+Responde SOLO JSON válido sin markdown:
 {
-  "analysis": "Análisis de 3-4 párrafos sobre el mercado, competencia estimada, oportunidades en los países seleccionados, tipos de audiencia y recomendaciones específicas para Fabrick",
+  "analysis": "Análisis de 3-4 párrafos",
   "strategy": {
-    "audiences": ["audiencia detallada 1","audiencia 2","audiencia 3","audiencia 4"],
-    "keywords": ["keyword 1","keyword 2","keyword 3","keyword 4","keyword 5","keyword 6"],
-    "markets": ["mercado y táctica 1","mercado 2","mercado 3"]
+    "audiences": ["aud1","aud2","aud3","aud4"],
+    "keywords": ["kw1","kw2","kw3","kw4","kw5","kw6"],
+    "markets": ["mercado1","mercado2","mercado3"]
   },
   "campaigns": [
-    {
-      "id":"c1","name":"FABRICK | ${catNames[cat].split(' ')[0]} Premium — Conversiones",
-      "type":"CONVERSIONES B2C","objective":"OUTCOME_SALES",
-      "copy":"Copy aspiracional máximo 2 oraciones. Estilo Fabrick premium.",
-      "tags":["tag1","tag2","tag3"],"hook":"Titular 6-8 palabras"
-    },
-    {
-      "id":"c2","name":"FABRICK | Proveedores B2B — Leads Profesionales",
-      "type":"LEADS B2B","objective":"OUTCOME_LEADS",
-      "copy":"Copy para arquitectos/diseñadores. Máximo 2 oraciones.",
-      "tags":["B2B","Arquitectos","Premium"],"hook":"Titular B2B 6-8 palabras"
-    },
-    {
-      "id":"c3","name":"FABRICK | Tienda Online — Tráfico Premium",
-      "type":"TRÁFICO","objective":"OUTCOME_TRAFFIC",
-      "copy":"Copy para tráfico a tienda. Máximo 2 oraciones.",
-      "tags":["Remodelacion","HomeStyle","Premium"],"hook":"Titular tráfico 6-8 palabras"
-    }
+    {"id":"c1","name":"FABRICK | ${catNames[cat].split(' ')[0]} Premium","type":"CONVERSIONES B2C","objective":"OUTCOME_SALES","copy":"Copy aspiracional 2 oraciones.","tags":["tag1","tag2","tag3"],"hook":"Titular 6-8 palabras"},
+    {"id":"c2","name":"FABRICK | Proveedores B2B — Leads","type":"LEADS B2B","objective":"OUTCOME_LEADS","copy":"Copy para arquitectos.","tags":["B2B","Arquitectos","Premium"],"hook":"Titular B2B"},
+    {"id":"c3","name":"FABRICK | Tienda Online — Tráfico","type":"TRÁFICO","objective":"OUTCOME_TRAFFIC","copy":"Copy para tráfico.","tags":["Remodelacion","HomeStyle","Premium"],"hook":"Titular tráfico"}
   ]
 }`;
 
   let aiData;
   try {
-    log('🤖','Consultando OpenRouter IA (modelo gratuito)...','warn');
     const raw = await askAI(promptStrategy);
     const clean = raw.replace(/```json|```/g,'').trim();
     aiData = JSON.parse(clean);
-    log('✅','Estrategia y análisis generados por IA.','ok');
+    log('✅','Estrategia generada por IA.','ok');
     setProgress(40,'Estrategia generada');
   } catch(e) {
     log('⚠','IA no disponible, usando estrategia base Fabrick.','warn');
@@ -1210,15 +1531,16 @@ Responde SOLO JSON válido sin markdown ni explicación:
   }
 
   // Show strategy
-  document.getElementById('strategyBox').classList.add('show');
+  const sb = document.getElementById('strategyBox');
+  sb.classList.add('show');
   document.getElementById('strategyGrid').innerHTML = `
     <div class="strategy-cols">
       <div><div class="s-col-title">AUDIENCIAS</div>${aiData.strategy.audiences.map(a=>`<div class="s-item">${a}</div>`).join('')}</div>
       <div><div class="s-col-title">KEYWORDS</div>${aiData.strategy.keywords.map(k=>`<div class="s-item">${k}</div>`).join('')}</div>
       <div><div class="s-col-title">MERCADOS</div>${aiData.strategy.markets.map(m=>`<div class="s-item">${m}</div>`).join('')}</div>
     </div>`;
+  gsap.from(sb, { opacity: 0, y: 20, duration: 0.5, ease: 'power2.out' });
 
-  // Analysis modal
   if (doAnalysis && aiData.analysis) {
     setThinking(false);
     STATE.pendingCampaigns = { aiData, budget, bid };
@@ -1242,10 +1564,11 @@ async function confirmLaunch() {
 
 async function executeCampaigns(aiData, budget, bid) {
   setThinking(true,'CREANDO CAMPAÑAS EN META ADS...');
-  setBadge('CREANDO');
+  setBadge('CREANDO', 'running');
   log('📡',`Creando ${aiData.campaigns.length} campañas en Meta Ads...`,'warn');
 
   const grid = document.getElementById('campsGrid');
+  const cat = document.getElementById('category').value;
   let created = 0;
 
   for (let i = 0; i < aiData.campaigns.length; i++) {
@@ -1253,49 +1576,59 @@ async function executeCampaigns(aiData, budget, bid) {
     setProgress(40 + ((i+1)/aiData.campaigns.length)*55, `Creando campaña ${i+1} de ${aiData.campaigns.length}`);
     log('⚙️',`[${i+1}/${aiData.campaigns.length}] ${camp.name}`);
 
-    // Add card pending
+    const imgUrl = OBJ_IMAGES[camp.objective] || CAT_IMAGES[cat] || CAT_IMAGES.full;
     const card = document.createElement('div');
     card.className = 'camp-card'; card.id = `card-${camp.id}`;
-    card.style.animationDelay = (i*0.1)+'s';
     card.innerHTML = `
-      <div class="camp-card-glow"></div>
-      <div class="cc-type">${camp.type}</div>
-      <div class="cc-name">${camp.name}</div>
-      <div class="cc-copy">${camp.copy}</div>
-      <div class="cc-tags">${camp.tags.map(t=>`<span class="cc-tag">${t}</span>`).join('')}</div>
-      <div class="cc-foot">
-        <span class="cc-status pending" id="cs-${camp.id}">⏳ Creando...</span>
-        <span class="cc-id" id="ci-${camp.id}"></span>
+      <div class="camp-card-img">
+        <div class="camp-card-img-inner" style="background-image:url('${imgUrl}')"></div>
+        <div class="camp-card-img-overlay"></div>
+        <div style="position:absolute;top:12px;left:14px"><span class="cc-type">${camp.type}</span></div>
+        <span class="cc-status-badge creating" id="cs-${camp.id}" style="position:absolute;top:12px;right:14px">⏳ Creando...</span>
+      </div>
+      <div class="camp-card-body">
+        <div class="cc-hook">"${camp.hook || ''}"</div>
+        <div class="cc-name">${camp.name}</div>
+        <div class="cc-copy">${camp.copy}</div>
+        <div class="cc-tags">${camp.tags.map(t=>`<span class="cc-tag">${t}</span>`).join('')}</div>
+        <div class="cc-foot">
+          <span class="cc-id" id="ci-${camp.id}">Esperando...</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--muted)">$${(budget/100).toFixed(2)}/día</span>
+        </div>
       </div>`;
     grid.appendChild(card);
+    gsap.from(card, { opacity: 0, y: 30, scale: 0.95, duration: 0.5, ease: 'back.out(1.4)', delay: i * 0.1 });
+    addCardTilt(card);
 
     try {
       const params = { name: camp.name, objective: camp.objective, status: 'PAUSED', daily_budget: budget, bid_strategy: bid, special_ad_categories: '[]' };
       const res = await metaPost(`${CFG.metaAccount}/campaigns`, params);
       if (res.error) throw new Error(res.error.message);
-      document.getElementById(`cs-${camp.id}`).className = 'cc-status live';
-      document.getElementById(`cs-${camp.id}`).textContent = '✓ Creada en Meta';
-      document.getElementById(`ci-${camp.id}`).textContent = res.id;
+      const statusEl = document.getElementById(`cs-${camp.id}`);
+      statusEl.className = 'cc-status-badge active';
+      statusEl.textContent = '✓ Creada en Meta';
+      document.getElementById(`ci-${camp.id}`).textContent = 'ID: ' + res.id;
       log('✅',`Creada → ${res.id}`,'ok');
       created++; STATE.campsCreated++; STATE.totalBudget += budget;
       STATE.campaigns.push({ ...camp, metaId: res.id, created: new Date().toISOString() });
     } catch(e) {
-      document.getElementById(`cs-${camp.id}`).className = 'cc-status err';
-      document.getElementById(`cs-${camp.id}`).textContent = '✗ Error';
+      const statusEl = document.getElementById(`cs-${camp.id}`);
+      statusEl.className = 'cc-status-badge err';
+      statusEl.textContent = '✗ Error';
       log('❌',e.message,'err');
     }
     await new Promise(r => setTimeout(r, 700));
   }
 
   setThinking(false);
-  setProgress(100,'Completado');
-  setBadge('COMPLETADO');
+  setProgress(100,'¡Completado!');
+  setBadge('COMPLETADO', 'done');
 
   if (created > 0) {
     log('🎉',`¡${created} campañas creadas! Estado: PAUSADA — revisa en Ads Manager.`,'ok');
     log('💡','Actívalas cuando hayas revisado la segmentación y los creativos.','warn');
     toast(`✅ ${created} campañas creadas en Meta`);
-    document.getElementById('dStatCamps').textContent = STATE.campsCreated;
+    animateCounter('dStatCamps', STATE.campsCreated);
     if (CFG.githubToken && CFG.githubRepo) syncToGithub('campaigns');
   } else {
     log('⚠','No se crearon campañas. Verifica token y account ID.','err');
@@ -1304,16 +1637,16 @@ async function executeCampaigns(aiData, budget, bid) {
 
 function getFallback(cat, countries) {
   return {
-    analysis: `Análisis de mercado para ${catNames[cat]} en ${countries.join(', ')}.\n\nEl mercado de home luxury en Sudamérica presenta una oportunidad significativa con bajo nivel de competencia organizada. Los consumidores buscan experiencias premium a precio accesible.\n\nFabrick tiene ventaja competitiva por su respaldo de 8 años en construcción real, lo que genera confianza vs. competidores puramente digitales.\n\nSe recomienda comenzar con Chile (Maule, RM) y escalar a Colombia y México según resultados.`,
+    analysis: `Análisis de mercado para ${catNames[cat]} en ${countries.join(', ')}.\n\nEl mercado de home luxury en Sudamérica presenta una oportunidad significativa con bajo nivel de competencia organizada.\n\nFabrick tiene ventaja competitiva por su respaldo de 8 años en construcción real.\n\nSe recomienda comenzar con Chile (Maule, RM) y escalar a Colombia y México.`,
     strategy: {
       audiences: ['Propietarios de casa 28-55 años','Interés en remodelación de hogar','Mudanza reciente últimos 6 meses','Dispositivos premium iOS/Samsung high-end'],
       keywords: ['ducha termostática','revestimiento mármol PVC','grifería negro mate','smart home hogar','wall panels 3D','materiales construcción premium'],
       markets: ['Chile: Maule + RM + Biobío','Colombia: Bogotá + Medellín estratos 4-6','México: CDMX + Guadalajara + Monterrey']
     },
     campaigns: [
-      { id:'c1',name:`FABRICK | ${catNames[cat].split(' ')[0]} Premium — Conversiones`,type:'CONVERSIONES B2C',objective:'OUTCOME_SALES',copy:'Transforma tu hogar con materiales que solo los proyectos de lujo conocen. 8 años de obra real, ahora en tu puerta.',tags:['LuxuryHome','FabrickStyle',countries[0]]},
-      { id:'c2',name:'FABRICK | Proveedores B2B — Leads Profesionales',type:'LEADS B2B',objective:'OUTCOME_LEADS',copy:'¿Arquitecto o diseñador? Accede al catálogo profesional Fabrick. Stock real, calidad garantizada por obra.',tags:['B2B','Arquitectos','Diseñadores']},
-      { id:'c3',name:'FABRICK | Tienda Online — Tráfico Premium',type:'TRÁFICO',objective:'OUTCOME_TRAFFIC',copy:'¿Cansado de los materiales comunes? Descubre el estándar Fabrick para acabados que hablan por sí solos.',tags:['Remodelacion','HomeStyle','Premium']}
+      { id:'c1', name:`FABRICK | ${catNames[cat].split(' ')[0]} Premium — Conversiones`, type:'CONVERSIONES B2C', objective:'OUTCOME_SALES', copy:'Transforma tu hogar con materiales que solo los proyectos de lujo conocen. 8 años de obra real, ahora en tu puerta.', tags:['LuxuryHome','FabrickStyle',countries[0]], hook:'El estándar de obra. Ahora en tu hogar.' },
+      { id:'c2', name:'FABRICK | Proveedores B2B — Leads Profesionales', type:'LEADS B2B', objective:'OUTCOME_LEADS', copy:'¿Arquitecto o diseñador? Accede al catálogo profesional Fabrick. Stock real, calidad garantizada.', tags:['B2B','Arquitectos','Diseñadores'], hook:'El catálogo que los profesionales eligen.' },
+      { id:'c3', name:'FABRICK | Tienda Online — Tráfico Premium', type:'TRÁFICO', objective:'OUTCOME_TRAFFIC', copy:'¿Cansado de los materiales comunes? Descubre el estándar Fabrick para acabados que hablan por sí solos.', tags:['Remodelacion','HomeStyle','Premium'], hook:'Materiales que definen espacios únicos.' }
     ]
   };
 }
@@ -1322,9 +1655,9 @@ function getFallback(cat, countries) {
 // SKILLS
 // ════════════════════════════════════
 const defaultSkills = [
-  { id:'s1', name:'Campaña Conversiones Lujo', category:'Conversiones', prompt:'Crea campañas de conversiones enfocadas en audiencias premium. Usa copy aspiracional sin mencionar descuentos. Incluye siempre el respaldo de 8 años de Fabrick.', saved:true },
-  { id:'s2', name:'Lead Gen B2B Arquitectos', category:'Leads', prompt:'Segmenta arquitectos, diseñadores de interiores y constructores independientes. Ofrece catálogo profesional y condiciones especiales de proveedor.', saved:true },
-  { id:'s3', name:'Retargeting Visitantes', category:'Retargeting', prompt:'Crea campañas de retargeting para visitantes de la tienda que no compraron. Usa urgencia sutil y propuesta de valor diferenciada.', saved:false },
+  { id:'s1', name:'Campaña Conversiones Lujo', category:'Conversiones', prompt:'Crea campañas de conversiones enfocadas en audiencias premium. Usa copy aspiracional sin mencionar descuentos. Incluye el respaldo de 8 años de Fabrick.', saved:true },
+  { id:'s2', name:'Lead Gen B2B Arquitectos', category:'Leads', prompt:'Segmenta arquitectos, diseñadores de interiores y constructores. Ofrece catálogo profesional y condiciones especiales de proveedor.', saved:true },
+  { id:'s3', name:'Retargeting Visitantes', category:'Retargeting', prompt:'Campañas de retargeting para visitantes que no compraron. Usa urgencia sutil y propuesta de valor diferenciada.', saved:false },
 ];
 
 function renderSkills() {
@@ -1332,13 +1665,15 @@ function renderSkills() {
   const grid = document.getElementById('skillsGrid');
   grid.innerHTML = allSkills.map(s => `
     <div class="skill-card" onclick="applySkill('${s.id}')">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div class="skill-name">${s.name}</div>
-        <span style="font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;background:rgba(245,230,66,0.08);color:var(--yellow)">${s.category}</span>
+        <span style="font-family:var(--mono);font-size:10px;padding:2px 9px;border-radius:4px;background:rgba(245,230,66,0.07);color:var(--yellow)">${s.category}</span>
       </div>
       <div class="skill-desc">${s.prompt}</div>
       <span class="skill-badge ${s.saved ? 'saved' : 'local'}">${s.saved ? '✓ En GitHub' : '⏳ Local'}</span>
     </div>`).join('');
+  gsap.from(grid.querySelectorAll('.skill-card'), { y: 20, opacity: 0, duration: 0.4, stagger: 0.08, ease: 'power2.out' });
+  grid.querySelectorAll('.skill-card').forEach(addCardTilt);
 }
 
 function applySkill(id) {
@@ -1348,7 +1683,7 @@ function applySkill(id) {
   document.getElementById('extraPrompt').value = skill.prompt;
   document.querySelectorAll('.skill-card').forEach(c => c.classList.remove('active'));
   event.currentTarget.classList.add('active');
-  switchTab('agent', document.querySelector('.tab-btn'));
+  switchTab('agent', document.querySelector('.tab-btn:nth-child(2)'));
   toast(`✅ Skill "${skill.name}" aplicada`);
 }
 
@@ -1376,7 +1711,6 @@ async function syncToGithub(type) {
   if (!CFG.githubToken || !CFG.githubRepo) { toast('⚠ Configura GitHub primero'); showModal('configModal'); return; }
   const [owner, repo] = CFG.githubRepo.split('/');
   if (!owner || !repo) { toast('⚠ Repositorio inválido. Formato: usuario/repo'); return; }
-
   ghLog('🔄',`Sincronizando ${type} a GitHub...`);
 
   const files = {};
@@ -1387,12 +1721,9 @@ async function syncToGithub(type) {
     files['fabrick-ads/campaigns.json'] = JSON.stringify(STATE.campaigns, null, 2);
   }
   if (type === 'config' || type === 'all') {
-    // Config sin tokens sensibles
     files['fabrick-ads/config.json'] = JSON.stringify({
-      metaAccount: CFG.metaAccount,
-      lastSync: new Date().toISOString(),
-      totalCampaigns: STATE.campsCreated,
-      countries: STATE.countries,
+      metaAccount: CFG.metaAccount, lastSync: new Date().toISOString(),
+      totalCampaigns: STATE.campsCreated, countries: STATE.countries,
     }, null, 2);
   }
   if (type === 'all') {
@@ -1402,7 +1733,6 @@ async function syncToGithub(type) {
   let ok = 0, fail = 0;
   for (const [path, content] of Object.entries(files)) {
     try {
-      // Get current SHA if exists
       let sha;
       try {
         const r = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`, {
@@ -1411,10 +1741,8 @@ async function syncToGithub(type) {
         const d = await r.json();
         if (d.sha) sha = d.sha;
       } catch(e) {}
-
       const body = { message: `🤖 Fabrick ADS: sync ${type} — ${new Date().toLocaleString('es')}`, content: btoa(unescape(encodeURIComponent(content))) };
       if (sha) body.sha = sha;
-
       const res = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/contents/${path}`, {
         method: 'PUT',
         headers: { 'Authorization': `token ${CFG.githubToken}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github.v3+json' },
@@ -1422,19 +1750,14 @@ async function syncToGithub(type) {
       });
       const data = await res.json();
       if (data.content || data.commit) {
-        ghLog('✅',`${path} → synced`);
-        ok++;
-        // Mark skills as saved
+        ghLog('✅',`${path} → synced`); ok++;
         if (type === 'skills' || type === 'all') STATE.skills.forEach(s => s.saved = true);
-      } else {
-        ghLog('❌',`${path}: ${data.message || 'Error'}`);
-        fail++;
-      }
+      } else { ghLog('❌',`${path}: ${data.message || 'Error'}`); fail++; }
     } catch(e) { ghLog('❌',`${path}: ${e.message}`); fail++; }
   }
 
   localStorage.setItem('fabrick_skills', JSON.stringify(STATE.skills));
-  if (ok > 0) { renderSkills(); toast(`✅ GitHub sync: ${ok} archivos actualizados`); }
+  if (ok > 0) { renderSkills(); toast(`✅ GitHub sync: ${ok} archivos`); }
   if (fail > 0) toast(`⚠ ${fail} errores en sync`);
 }
 
@@ -1447,33 +1770,40 @@ async function loadMetrics() {
   const to = document.getElementById('mTo').value;
   const level = document.getElementById('mLevel').value;
   if (!from || !to) { toast('⚠ Selecciona fechas'); return; }
+  const container = document.getElementById('metricsResult');
+  container.innerHTML = '<div style="text-align:center;color:var(--info);font-family:var(--mono);font-size:12px;padding:40px">Cargando métricas...</div>';
   try {
     const params = { fields: 'spend,reach,impressions,clicks,ctr,cpc,cpm,actions,date_start,date_stop', time_range: JSON.stringify({since:from,until:to}) };
     if (level !== 'account') params.level = level;
     const data = await metaGet(`${CFG.metaAccount}/insights`, params);
-    const container = document.getElementById('metricsResult');
-    if (!data.data || !data.data.length) { container.innerHTML = '<div class="glass-panel" style="padding:40px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px">Sin datos para el período</div>'; return; }
+    if (!data.data || !data.data.length) {
+      container.innerHTML = '<div class="glass-card" style="padding:40px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:12px">Sin datos para el período seleccionado</div>';
+      return;
+    }
     const rows = data.data.map(d => {
-      const conv = (d.actions||[]).find(a=>a.action_type==='purchase');
-      return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:11px;color:var(--muted)">${d.date_start}</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">$${parseFloat(d.spend||0).toFixed(2)}</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">${num(d.reach||0)}</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">${num(d.impressions||0)}</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">${num(d.clicks||0)}</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">${parseFloat(d.ctr||0).toFixed(2)}%</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">$${parseFloat(d.cpc||0).toFixed(2)}</td>
-        <td style="padding:12px 16px;font-family:var(--mono);font-size:12px">${conv?conv.value:'—'}</td>
+      const conv = (d.actions||[]).find(a => a.action_type === 'purchase');
+      return `<tr>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--muted)">${d.date_start}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--yellow)">$${parseFloat(d.spend||0).toFixed(2)}</td>
+        <td style="font-family:var(--mono);font-size:12px">${num(d.reach||0)}</td>
+        <td style="font-family:var(--mono);font-size:12px">${num(d.impressions||0)}</td>
+        <td style="font-family:var(--mono);font-size:12px">${num(d.clicks||0)}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--info)">${parseFloat(d.ctr||0).toFixed(2)}%</td>
+        <td style="font-family:var(--mono);font-size:12px">$${parseFloat(d.cpc||0).toFixed(2)}</td>
+        <td style="font-family:var(--mono);font-size:12px;color:var(--success)">${conv ? conv.value : '—'}</td>
       </tr>`;
     }).join('');
-    container.innerHTML = `<div class="glass-panel" style="overflow:hidden">
-      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">
-        <thead><tr style="border-bottom:1px solid var(--border)">
-          ${['FECHA','GASTO','ALCANCE','IMPRES.','CLICS','CTR','CPC','CONV.'].map(h=>`<th style="padding:12px 16px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:0.1em;font-weight:400">${h}</th>`).join('')}
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table></div>
+    container.innerHTML = `<div class="glass-card" style="overflow:hidden;padding:0">
+      <div style="overflow-x:auto">
+        <table class="data-table">
+          <thead><tr>
+            ${['FECHA','GASTO','ALCANCE','IMPRES.','CLICS','CTR','CPC','CONV.'].map(h=>`<th>${h}</th>`).join('')}
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
     </div>`;
+    gsap.from(container.querySelectorAll('tr'), { opacity: 0, x: -10, duration: 0.35, stagger: 0.04, ease: 'power2.out' });
   } catch(e) { toast('❌ ' + e.message); }
 }
 
@@ -1484,7 +1814,10 @@ function num(n) { return parseInt(n).toLocaleString('es-CL'); }
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
-  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'),3500);
+  gsap.from(el, { y: 14, scale: 0.94, duration: 0.35, ease: 'back.out(2)' });
+  clearTimeout(el._t); el._t = setTimeout(() => {
+    gsap.to(el, { opacity: 0, y: 8, duration: 0.3, ease: 'power2.in', onComplete: () => { el.classList.remove('show'); el.style.opacity=''; } });
+  }, 3500);
 }
 
 // ════════════════════════════════════
@@ -1492,20 +1825,17 @@ function toast(msg) {
 // ════════════════════════════════════
 const today = new Date();
 document.getElementById('mTo').value = today.toISOString().split('T')[0];
-document.getElementById('mFrom').value = new Date(today-30*864e5).toISOString().split('T')[0];
+document.getElementById('mFrom').value = new Date(today - 30*864e5).toISOString().split('T')[0];
 
-// Add growBar keyframe dynamically
-const style = document.createElement('style');
-style.textContent = '@keyframes growBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}';
-document.head.appendChild(style);
-
+updateModelOptions();
 loadConfig();
 renderSkills();
 
-// Show config modal if no token
-setTimeout(() => {
-  if (!CFG.metaToken) showModal('configModal');
-}, 800);
+window.addEventListener('DOMContentLoaded', () => {
+  initGSAP();
+  setTimeout(() => { if (!CFG.metaToken) showModal('configModal'); }, 900);
+});
+
 </script>
 </body>
 </html>
